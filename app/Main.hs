@@ -28,10 +28,10 @@ page = pure $ do
     el ~ stack $ do
       tag "button" "Load Example" @ class_ "dropdown-examples"
       ol ~ popup (TL 30 10) . display None . displayOnHover $ do
-        let nums = list Decimal
-        li ~ nums $ "one"
-        li ~ nums $ "two"
-        li ~ nums $ "three"
+        let numerals = list Decimal
+        li ~ numerals $ "one"
+        li ~ numerals $ "two"
+        li ~ numerals $ "three"
     space
     nav $ do
       link [uri|https://xd.org|] "Docs"
@@ -46,7 +46,7 @@ page = pure $ do
   header "run"
 
 
-
+displayOnHover :: Styleable h => CSS h -> CSS h
 displayOnHover = css
     ""
     ".dropdown-examples:hover + ol"

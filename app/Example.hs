@@ -79,8 +79,8 @@ tAreaForm t = form Submit $ do
 
 page :: (Hyperbole :> es) => Page es '[Message,AddText]
 page = do
-  prm <- lookupParam "msg"
-  let msg = fromMaybe "hello" prm
+  p <- lookupParam "msg"
+  let msg = fromMaybe "hello" p
   pure $ do
     hyper AddText $ tAreaForm genFields
 
