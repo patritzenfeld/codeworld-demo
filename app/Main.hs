@@ -34,8 +34,8 @@ page = pure $ do
         li ~ numerals $ "three"
     space
     nav $ do
-      link [uri|https://xd.org|] "Docs"
-      link [uri|https://xd.org|] "Repo"
+      link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
+      link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
   row ~ pad 10 . gap 10 $ do
     col $ do
       header "Code Input"
