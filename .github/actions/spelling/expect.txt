@@ -1,6 +1,6 @@
 ctx
 img
-styleable
+Styleable
 XOverloaded
 XQuasi
 XType
