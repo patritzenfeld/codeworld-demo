@@ -1,0 +1,16 @@
+elems
+fmap
+fmidue
+foldl
+foldr
+fst
+ghc
+GHC
+ghci
+github
+Hspec
+mempty
+standalone
+thd
+unlines
+yml
