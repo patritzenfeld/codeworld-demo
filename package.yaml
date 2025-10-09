@@ -1,6 +1,6 @@
-name:                app
+name:                codeworld-demo
 version:             0.1.0.0
-github:              "patritzenfeld/app"
+github:              "patritzenfeld/codeworld-demo"
 license:             BSD-3-Clause
 author:              "Patrick Ritzenfeld"
 maintainer:          "patrick.ritzenfeld@uni-due.de"
@@ -48,7 +48,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - app
+    - codeworld-demo
 
 tests:
   app-test:
@@ -59,4 +59,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - app
+    - codeworld-demo
