@@ -8,9 +8,13 @@ ghc
 GHC
 ghci
 github
+Hlint
 Hspec
+HUnit
 mempty
 standalone
 thd
 unlines
+uncurry
 yml
+
