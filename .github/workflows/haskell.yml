@@ -32,6 +32,7 @@ jobs:
         with:
           path: ~/.stack
           key: ${{ matrix.os }}-${{ matrix.plan.build }}-stack-home-${{ hashFiles('stack.yaml') }}-${{ hashFiles('package.yaml') }}
+          persist-credentials: false
 
       - name: Setup stack
         uses: haskell-actions/setup@v2
