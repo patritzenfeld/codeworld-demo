@@ -14,5 +14,5 @@ max_line_length = 160
 [README.md]
 max_line_length = unset
 
-[{.github/{linters,actions/spelling,workflows}/*, *.cabal}]
+[{.github/{linters,actions/spelling,workflows}/*, codeworld-demo.cabal}]
 max_line_length = unset

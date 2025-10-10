@@ -2,7 +2,7 @@
 resolver: nightly-2025-07-23
 
 packages:
-- .
+  - .
 
 extra-deps:
   - hyperbole-0.5.0
