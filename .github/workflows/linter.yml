@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Linter
-        uses: super-linter/super-linter@v8.1.0
+        uses: actions/super-linter@v8.2.0
         env:
           YAML_ERROR_ON_WARNING: true
           VALIDATE_YAML_PRETTIER: false
