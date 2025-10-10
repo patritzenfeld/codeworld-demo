@@ -47,7 +47,7 @@ validateForm u =
     }
 
 validateText :: Text -> Validated Text
-validateText t = validate (t == "cat") "I hate cats!"
+validateText areaText = validate (areaText == "cat") "I hate cats!"
 
 
 data AddText = AddText
@@ -67,11 +67,11 @@ instance HyperView AddText es where
 
 
 tAreaForm :: TextRes' Validated -> View AddText ()
-tAreaForm t = form Submit $ do
+tAreaForm result = form Submit $ do
   let f = fieldNames @TextRes'
   field (te f) $ do
     label $ do
-      el $ invalidText $ te t
+      el $ invalidText $ te result
       textarea Nothing @ placeholder "enter text"
   submit "Submit"
 

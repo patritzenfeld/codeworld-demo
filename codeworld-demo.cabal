@@ -32,7 +32,7 @@ library
       Paths_codeworld_demo
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Werror -Widentities -Wredundant-constraints
   build-depends:
       atomic-css
     , base >=4.7 && <5
@@ -49,7 +49,7 @@ executable codeworld-demo-exe
       Paths_codeworld_demo
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Werror -Widentities -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       atomic-css
     , base >=4.7 && <5
@@ -67,7 +67,7 @@ test-suite codeworld-demo-test
       Paths_codeworld_demo
   hs-source-dirs:
       test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Werror -Widentities -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       atomic-css
     , base >=4.7 && <5

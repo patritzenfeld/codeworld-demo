@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
@@ -26,7 +26,7 @@ jobs:
             "export i={}; grep -v '^--' \"\$i\" | grep -v '^$' > \"\$i.original\"; rm \"\$i\"" \;
 
       - name: Set up Haskell
-        uses: haskell-actions/setup@v2
+        uses: haskell-actions/setup@82e8b5066385702e477d9dc98f287070493e8abd # v2.8.2
         with:
           enable-stack: true
           stack-no-global: true

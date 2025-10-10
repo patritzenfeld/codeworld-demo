@@ -24,7 +24,9 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Cache Stack
         id: cache-stack-unix
@@ -32,10 +34,9 @@ jobs:
         with:
           path: ~/.stack
           key: ${{ matrix.os }}-${{ matrix.plan.build }}-stack-home-${{ hashFiles('stack.yaml') }}-${{ hashFiles('package.yaml') }}
-          persist-credentials: false
 
       - name: Setup stack
-        uses: haskell-actions/setup@v2
+        uses: haskell-actions/setup@82e8b5066385702e477d9dc98f287070493e8abd # v2.8.2
         with:
           enable-stack: true
           stack-no-global: true

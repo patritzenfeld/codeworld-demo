@@ -14,11 +14,11 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Run Link Checker
-        uses: serokell/xrefcheck-action@v1
+        uses: serokell/xrefcheck-action@81d3967156933307f52fc52f8dc7fa5e947509c2 # v1
         with:
           xrefcheck-args: --ignore ./README.md
