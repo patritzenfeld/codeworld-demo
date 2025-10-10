@@ -5,10 +5,13 @@ packages:
   - .
 
 extra-deps:
+  - QuickCheck-2.15.0.1
   - hyperbole-0.5.0
   - atomic-css-0.2.0
   - git: https://github.com/fmidue/IOTasks
-    commit: 659385853299b4fcb27bd26e7ab185af27a9d00a
+    commit: e3b6b741ddb731b263e2d29713fdad027478c08c
+  - git: https://github.com/fmidue/codeworld-tasks
+    commit: 67bc363e81485a14a1aa624b8dd1d47a067d7bf0
   - git: https://github.com/IagoAbal/haskell-z3
     commit: b77a17e5eeb7db82656bcbcd66c6e952207e69ca
   - git: https://github.com/owestphal/type-match
@@ -18,3 +21,6 @@ extra-deps:
     subdirs:
       - .
       - raw
+
+ghc-options:
+  codeworld-tasks: -Wno-deriving-typeable

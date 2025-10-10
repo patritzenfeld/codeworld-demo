@@ -17,6 +17,10 @@ import Web.Hyperbole
 import Web.Atomic.CSS
 import Data.Text
 import Effectful
+import System.Directory
+import System.Exit                      (exitFailure)
+import Haskell.Template.Task            (grade)
+import Text.PrettyPrint.Leijen.Text     (putDoc)
 
 
 data AppColor
@@ -50,20 +54,32 @@ instance IOE :> es => HyperView Feedback es where
     = Submit
     deriving (Generic, ViewAction)
   update Submit = do
-   -- f <- formData @(Submission Identity)
+    f <- formData @(Submission Identity)
+    liftIO $ do
+      tmp <- getTemporaryDirectory
+      task <- readFile "test-files/Task01.conf"
+      grade
+        id
+        rejection
+        suggestion
+        tmp
+        task
+        (unpack $ program f)
     liftIO $ print @Int 2
     pure $ do
-      tAreaForm
-      -- el "submitted"
+      tAreaForm f
+    where
+      rejection d = putDoc d >> exitFailure
+      suggestion _ = putStrLn "suggestion"
 
 
 
-tAreaForm :: View Feedback ()
-tAreaForm = form Submit ~ grow $ do
+tAreaForm :: Submission Identity -> View Feedback ()
+tAreaForm contents = form Submit ~ grow $ do
   -- let f = fieldNames @Submission
   field "program" $ do
     header "Code Input"
-    textarea Nothing ~ bg LightGray . grow  -- . height (PxRem 500)
+    textarea (Just $ program contents) ~ bg LightGray . grow  -- . height (PxRem 500)
   submit "Submit" ~ bg DarkRed . color White
 
 
@@ -76,7 +92,7 @@ main = do
 
 page :: IOE :> es => Page es '[Feedback]
 page = do
-  liftIO $ print @Int 1
+  template <- liftIO $ readFile "test-files/Task01.hs"
   pure $ do
     row ~ bg DarkRed . color White $ do
       header "Title"
@@ -93,7 +109,7 @@ page = do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
         link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
     row ~ grow . pad 10 . gap 10 ~ bg DarkGray $ do
-      hyper Feedback tAreaForm ~ display Flex . grow
+      hyper Feedback (tAreaForm $ Submission $ pack template)~ display Flex . grow
       col ~ grow $ do
         header "Feedback"
         el "" ~ bg LightGray . grow

@@ -43,6 +43,7 @@ library
     , haskell-template-task-raw
     , hyperbole
     , text
+    , wl-pprint-text
   default-language: Haskell2010
 
 executable codeworld-demo-exe
@@ -56,9 +57,11 @@ executable codeworld-demo-exe
       app
   ghc-options: -Wall -Wcompat -Werror -Widentities -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      atomic-css
+      IOTasks
+    , atomic-css
     , base >=4.7 && <5
     , codeworld-demo
+    , codeworld-tasks
     , directory
     , effectful-core
     , filepath
@@ -66,6 +69,7 @@ executable codeworld-demo-exe
     , haskell-template-task-raw
     , hyperbole
     , text
+    , wl-pprint-text
   default-language: Haskell2010
 
 test-suite codeworld-demo-test
@@ -89,4 +93,5 @@ test-suite codeworld-demo-test
     , haskell-template-task-raw
     , hyperbole
     , text
+    , wl-pprint-text
   default-language: Haskell2010

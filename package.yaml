@@ -20,6 +20,7 @@ dependencies:
   - filepath
   - haskell-template-task
   - haskell-template-task-raw
+  - wl-pprint-text
   - hyperbole
   - atomic-css
   - text
@@ -44,6 +45,8 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - codeworld-demo
+      - codeworld-tasks
+      - IOTasks
 
 tests:
   codeworld-demo-test:
