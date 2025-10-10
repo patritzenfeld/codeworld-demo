@@ -1,4 +1,4 @@
 ---
 rules:
-  template-injection:
+  dangerous-triggers:
     disable: true
