@@ -15,6 +15,11 @@ description: Please see the README on GitHub at <https://github.com/patritzenfel
 
 dependencies:
   - base >= 4.7 && < 5
+  - effectful-core
+  - directory
+  - filepath
+  - haskell-template-task
+  - haskell-template-task-raw
   - hyperbole
   - atomic-css
   - text
