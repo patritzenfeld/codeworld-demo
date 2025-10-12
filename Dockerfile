@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y curl locales libz3-dev && \
     locale-gen en_US.UTF-8
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
-RUN stack build --no-terminal --dependencies-only > /tmp/stack_deps.log
+RUN stack build --no-terminal > /tmp/stack_deps.log
 
 # define the port number the container should expose
 EXPOSE 3000
