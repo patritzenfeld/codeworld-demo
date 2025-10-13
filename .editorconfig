@@ -14,5 +14,9 @@ max_line_length = 160
 [README.md]
 max_line_length = unset
 
-[{.github/{linters,actions/spelling,workflows}/*, test-files/*}]
+[.github/{linters,actions/spelling,workflows}/*]
 max_line_length = unset
+
+[test-files/*]
+max_line_length = unset
+trim_trailing_whitespace = false
