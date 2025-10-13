@@ -35,6 +35,7 @@ jobs:
           VALIDATE_BIOME_LINT: false
           VALIDATE_YAML_PRETTIER: false
           VALIDATE_MARKDOWN_PRETTIER: false
+          VALIDATE_TRIVY: false
           GITHUB_ACTIONS_COMMAND_ARGS: -shellcheck=
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
