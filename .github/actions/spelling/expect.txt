@@ -4,6 +4,7 @@ FFF
 IOE
 Leijen
 lhs
+libz
 rhs
 Styleable
-
+WORKDIR
