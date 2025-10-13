@@ -3,9 +3,10 @@
 FROM ubuntu:24.04
 HEALTHCHECK --interval=300s --timeout=60s --retries=3 CMD curl -f http://localhost:3000 || exit 1
 
-RUN useradd -m -s /bin/bash user
+RUN useradd -m user
 # set a directory for the app
 WORKDIR /setup
+RUN chown user /setup
 
 # copy all the files to the container
 COPY --chown=user . .
