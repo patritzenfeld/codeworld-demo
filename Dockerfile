@@ -5,8 +5,7 @@ HEALTHCHECK --interval=300s --timeout=60s --retries=3 CMD curl -f http://localho
 
 RUN useradd -m user
 # set a directory for the app
-WORKDIR /setup
-RUN chown user /setup
+WORKDIR /home/user
 
 # copy all the files to the container
 COPY --chown=user . .
