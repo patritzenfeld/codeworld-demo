@@ -15,7 +15,6 @@ module Main where
 
 import Web.Hyperbole
 import Web.Atomic.CSS
-import Control.Monad                    (unless)
 import Control.Monad.Except
 import Control.Monad.Writer
 import Data.Text                        (Text, unpack, pack)
@@ -77,27 +76,25 @@ instance IOE :> es => HyperView Feedback es where
     deriving (Generic, ViewAction)
   update Submit = do
     f <- formData @(Submission Identity)
-    liftIO $ do
+    (status, doc) <- liftIO $ do
       tmp <- getTemporaryDirectory
       task <- readFile "test-files/Task01.conf"
-      (status, doc) <- grade
+      grade
         evaluate
         reject
         suggest
         tmp
         task
         (unpack $ program f)
-      let feedback = show doc
-      case status of
-        Left Reject ->
-          putStrLn "rejected"
-        _           -> do
-          putStrLn "went through"
-          unless (null feedback) $ do
-            putStrLn "suggestions:"
-      print feedback
+    let feedback = show doc
+    let message = case (status, feedback) of
+          (Left Reject, _) -> "rejected"
+          (_, [])          -> "went through"
+          _                -> "suggestion"
     pure $ do
       tAreaForm f
+      text message
+      text $ pack feedback
 
 
 tAreaForm :: Submission Identity -> View Feedback ()
