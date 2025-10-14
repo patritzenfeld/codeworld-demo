@@ -13,15 +13,17 @@
 
 module Main where
 
+
+import Control.Monad.Except             (ExceptT, runExceptT, throwError)
+import Control.Monad.Writer             (WriterT, runWriterT, tell)
+import Data.Text                        (Text, pack, unpack)
+import Effectful                        (IOE, liftIO)
+import Haskell.Template.Task            (grade)
+import System.Directory                 (getTemporaryDirectory)
+import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
 import Web.Atomic.CSS
-import Control.Monad.Except
-import Control.Monad.Writer
-import Data.Text                        (Text, unpack, pack)
-import Effectful
-import System.Directory
-import Haskell.Template.Task            (grade)
-import Text.PrettyPrint.Leijen.Text     (Doc)
+
 
 
 data AppColor
