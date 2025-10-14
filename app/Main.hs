@@ -34,7 +34,6 @@ data AppColor
   | UIElem
   | UIText
   | FeedbackOkay
-  | FeedbackOkayText
   | FeedbackRejected
   | FeedbackRejectedText
   | FeedbackSuggestion
@@ -148,7 +147,11 @@ page = do
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
         link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
-    hyper Feedback (tAreaForm (Submission {config = pack settings, program = pack template}) "" (Editor, DefaultText)) ~ display Flex . grow
+    let submission = Submission
+          { config = pack settings
+          , program = pack template
+          }
+    hyper Feedback (tAreaForm submission "" (Editor, DefaultText)) ~ display Flex . grow
 
 
 buttonMock :: View c () -> View c ()
