@@ -10,6 +10,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Main where
 
@@ -18,8 +19,9 @@ import Control.Monad                    (void)
 import Control.Monad.Except             (ExceptT, runExceptT, throwError)
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
 import Data.Text                        (Text, pack, unpack)
-import Effectful                        (IOE, liftIO)
+import Effectful                        (IOE, MonadIO, liftIO)
 import Haskell.Template.Task            (grade)
+import System.FilePath
 import System.Directory                 (getTemporaryDirectory)
 import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
@@ -84,7 +86,14 @@ suggest = void . tell
 instance IOE :> es => HyperView Feedback es where
   data Action Feedback
     = Submit
+    | Load FilePath
     deriving (Generic, ViewAction)
+  update (Load path) = do
+    config <- loadFile $ path <.> "conf"
+    program <- loadFile $ path <.> "hs"
+    let submission = Submission {config, program}
+    pure $ tAreaForm submission "" (Editor, DefaultText)
+
   update Submit = do
     f <- formData @(Submission Identity)
     (status, doc) <- liftIO $ do
@@ -96,7 +105,6 @@ instance IOE :> es => HyperView Feedback es where
         tmp
         (unpack $ config f)
         (unpack $ program f)
-    liftIO $ print doc
     let feedback = show doc
     let colors = case (status, feedback) of
           (Left Reject, _) -> (FeedbackRejected,FeedbackRejectedText)
@@ -130,8 +138,8 @@ main = do
 
 page :: IOE :> es => Page es '[Feedback]
 page = do
-  template <- liftIO $ readFile "test-files/Task01.hs"
-  settings <- liftIO $ readFile "test-files/Task01.conf"
+  program <- loadFile "test-files/Task01.hs"
+  config <- loadFile "test-files/Task01.conf"
   pure $ do
     row ~ bg UIElem . color UIText $ do
       header "Title"
@@ -147,10 +155,7 @@ page = do
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
         link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
-    let submission = Submission
-          { config = pack settings
-          , program = pack template
-          }
+    let submission = Submission {config, program}
     hyper Feedback (tAreaForm submission "" (Editor, DefaultText)) ~ display Flex . grow
 
 
@@ -165,7 +170,10 @@ displayOnHover = css
     ]
 
 
-
 header :: Text -> View ctx ()
 header txt = do
   el ~ bold $ text txt
+
+
+loadFile :: MonadIO m => FilePath -> m Text
+loadFile = liftIO . fmap pack . readFile
