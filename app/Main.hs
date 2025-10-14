@@ -15,12 +15,14 @@ module Main where
 
 import Web.Hyperbole
 import Web.Atomic.CSS
-import Data.Text
+import Control.Monad                    (unless)
+import Control.Monad.Except
+import Control.Monad.Writer
+import Data.Text                        (Text, unpack, pack)
 import Effectful
 import System.Directory
-import System.Exit                      (exitFailure)
 import Haskell.Template.Task            (grade)
-import Text.PrettyPrint.Leijen.Text     (putDoc)
+import Text.PrettyPrint.Leijen.Text     (Doc)
 
 
 data AppColor
@@ -49,6 +51,26 @@ data Feedback = Feedback
   deriving (Generic, ViewId)
 
 
+data Reject = Reject deriving Show
+type Output = ExceptT Reject (WriterT Doc IO)
+
+
+reject :: Doc -> Output a
+reject doc = do
+  tell doc
+  throwError Reject
+
+
+evaluate :: Output a -> IO (Either Reject a, Doc)
+evaluate o = runWriterT $ runExceptT o
+
+
+suggest :: Doc -> Output ()
+suggest doc = do
+  tell doc
+  pure ()
+
+
 instance IOE :> es => HyperView Feedback es where
   data Action Feedback
     = Submit
@@ -58,20 +80,24 @@ instance IOE :> es => HyperView Feedback es where
     liftIO $ do
       tmp <- getTemporaryDirectory
       task <- readFile "test-files/Task01.conf"
-      grade
-        id
-        rejection
-        suggestion
+      (status, doc) <- grade
+        evaluate
+        reject
+        suggest
         tmp
         task
         (unpack $ program f)
-    liftIO $ print @Int 2
+      let feedback = show doc
+      case status of
+        Left Reject ->
+          putStrLn "rejected"
+        _           -> do
+          putStrLn "went through"
+          unless (null feedback) $ do
+            putStrLn "suggestions:"
+      print feedback
     pure $ do
       tAreaForm f
-    where
-      rejection d = putDoc d >> exitFailure
-      suggestion _ = putStrLn "suggestion"
-
 
 
 tAreaForm :: Submission Identity -> View Feedback ()

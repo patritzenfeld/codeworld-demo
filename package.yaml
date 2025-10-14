@@ -23,6 +23,7 @@ dependencies:
   - wl-pprint-text
   - hyperbole
   - atomic-css
+  - mtl
   - text
 
 ghc-options:
