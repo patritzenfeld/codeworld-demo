@@ -14,6 +14,7 @@
 module Main where
 
 
+import Control.Monad                    (void)
 import Control.Monad.Except             (ExceptT, runExceptT, throwError)
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
 import Data.Text                        (Text, pack, unpack)
@@ -23,27 +24,40 @@ import System.Directory                 (getTemporaryDirectory)
 import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
 import Web.Atomic.CSS
-
+import Web.Atomic.CSS.Layout
 
 
 data AppColor
-  = White
-  | LightGray
-  | DarkGray
-  | DarkRed
+  = Editor
+  | Background
+  | DefaultText
+  | UIElem
+  | UIText
+  | FeedbackOkay
+  | FeedbackOkayText
+  | FeedbackRejected
+  | FeedbackRejectedText
+  | FeedbackSuggestion
+  | FeedbackSuggestionText
   deriving (Show)
 
 
 instance ToColor AppColor where
-  colorValue White = "#FFF"
-  colorValue LightGray = "#D3D3D3"
-  colorValue DarkGray = "#626262"
-  colorValue DarkRed = "#800000"
+  colorValue UIText = "#FFF" -- white
+  colorValue Editor = "#D3D3D3" -- light gray
+  colorValue Background = "#626262" -- dark gray
+  colorValue UIElem = "#800000" -- dark red
+  colorValue FeedbackOkay = "#008000" -- green
+  colorValue FeedbackRejected = "#B32821" -- bright red
+  colorValue FeedbackRejectedText = "#009ED4" -- light blue
+  colorValue FeedbackSuggestion = "#FF8A00" -- orange
+  colorValue FeedbackSuggestionText = "#4A00FF" -- navy blue
+  colorValue DefaultText = "#000" -- black
 
 
-
-newtype Submission f = Submission
-  { program :: Field f Text
+data Submission f = Submission
+  { config :: Field f Text
+  , program :: Field f Text
   }
   deriving (Generic, FromFormF, GenFields FieldName, GenFields Validated)
 
@@ -57,19 +71,15 @@ type Output = ExceptT Reject (WriterT Doc IO)
 
 
 reject :: Doc -> Output a
-reject doc = do
-  tell doc
-  throwError Reject
+reject doc = tell doc >> throwError Reject
 
 
 evaluate :: Output a -> IO (Either Reject a, Doc)
-evaluate o = runWriterT $ runExceptT o
+evaluate = runWriterT . runExceptT
 
 
 suggest :: Doc -> Output ()
-suggest doc = do
-  tell doc
-  pure ()
+suggest = void . tell
 
 
 instance IOE :> es => HyperView Feedback es where
@@ -80,33 +90,37 @@ instance IOE :> es => HyperView Feedback es where
     f <- formData @(Submission Identity)
     (status, doc) <- liftIO $ do
       tmp <- getTemporaryDirectory
-      task <- readFile "test-files/Task01.conf"
       grade
         evaluate
         reject
         suggest
         tmp
-        task
+        (unpack $ config f)
         (unpack $ program f)
+    liftIO $ print doc
     let feedback = show doc
-    let message = case (status, feedback) of
-          (Left Reject, _) -> "rejected"
-          (_, [])          -> "went through"
-          _                -> "suggestion"
-    pure $ do
-      tAreaForm f
-      text message
-      text $ pack feedback
+    let colors = case (status, feedback) of
+          (Left Reject, _) -> (FeedbackRejected,FeedbackRejectedText)
+          (_, [])          -> (FeedbackOkay, DefaultText)
+          _                -> (FeedbackSuggestion, FeedbackSuggestionText)
+    pure $ tAreaForm f feedback colors
 
 
-tAreaForm :: Submission Identity -> View Feedback ()
-tAreaForm contents = form Submit ~ grow $ do
-  -- let f = fieldNames @Submission
-  field "program" $ do
-    header "Code Input"
-    textarea (Just $ program contents) ~ bg LightGray . grow  -- . height (PxRem 500)
-  submit "Submit" ~ bg DarkRed . color White
-
+tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
+tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
+  let f = fieldNames @Submission
+  row ~ grow . pad 10 . gap 10 ~ bg Background $ do
+    col ~ grow $ do
+      field (program f) $ do
+        header "Code Input"
+        textarea (Just $ program contents) ~ bg Editor . grow
+      submit "Submit" ~ bg UIElem . color UIText
+    col ~ grow . maxWidth (Pct 0.43) $ do
+      field (config f) $ do
+        header "Config"
+        textarea (Just $ config contents) ~ bg Editor . grow
+      header "Feedback"
+      el (text $ pack feedback) ~ bg bgColor . color textColor . grow . whiteSpace PreWrap . maxHeight (Pct 0.15)
 
 
 main :: IO ()
@@ -118,8 +132,9 @@ main = do
 page :: IOE :> es => Page es '[Feedback]
 page = do
   template <- liftIO $ readFile "test-files/Task01.hs"
+  settings <- liftIO $ readFile "test-files/Task01.conf"
   pure $ do
-    row ~ bg DarkRed . color White $ do
+    row ~ bg UIElem . color UIText $ do
       header "Title"
       space
       el ~ stack @ class_ "dropdown-examples" $ do
@@ -133,12 +148,7 @@ page = do
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
         link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
-    row ~ grow . pad 10 . gap 10 ~ bg DarkGray $ do
-      hyper Feedback (tAreaForm $ Submission $ pack template)~ display Flex . grow
-      col ~ grow $ do
-        header "Feedback"
-        el "" ~ bg LightGray . grow
-
+    hyper Feedback (tAreaForm (Submission {config = pack settings, program = pack template}) "" (Editor, DefaultText)) ~ display Flex . grow
 
 
 buttonMock :: View c () -> View c ()
