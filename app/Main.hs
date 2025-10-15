@@ -28,6 +28,9 @@ import Web.Hyperbole
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout
 
+import CodeWorld.Demo.Style
+
+
 
 data AppColor
   = Editor
@@ -176,13 +179,6 @@ page = do
 buttonMock :: View c () -> View c ()
 buttonMock = tag "button"
 
-displayOnHover :: Styleable h => CSS h -> CSS h
-displayOnHover = css
-    "hover-reveal"
-    ".dropdown-examples:hover .hover-reveal"
-    [ "visibility" :. "visible"
-    ]
-
 
 header :: Text -> View ctx ()
 header txt = do
@@ -198,7 +194,3 @@ loadConfig = loadFile . ("configs" </>)
 
 loadTask :: MonadIO m => FilePath -> m Text
 loadTask = loadFile . ("tasks" </>)
-
-
-verticalScroll :: Styleable h => CSS h -> CSS h
-verticalScroll = utility "v-scroll" ["overflow-y" :. "auto"]

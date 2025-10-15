@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      CodeWorld.Demo.Style
   other-modules:
       Paths_codeworld_demo
   autogen-modules:
