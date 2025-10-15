@@ -11,6 +11,7 @@ github
 Hlint
 Hspec
 HUnit
+mconcat
 mempty
 standalone
 thd

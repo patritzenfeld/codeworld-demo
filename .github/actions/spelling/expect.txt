@@ -8,4 +8,5 @@ lhs
 libz
 rhs
 Styleable
+Uniplate
 WORKDIR
