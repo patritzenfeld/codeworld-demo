@@ -66,6 +66,8 @@ data Submission f = Submission
 data Feedback = Feedback
   deriving (Generic, ViewId)
 
+data HoverMenu = HoverMenu
+  deriving (Generic, ViewId)
 
 data Reject = Reject deriving Show
 type Output = ExceptT Reject (WriterT Doc IO)
@@ -113,6 +115,14 @@ instance IOE :> es => HyperView Feedback es where
     pure $ tAreaForm f feedback colors
 
 
+instance HyperView HoverMenu es where
+  data Action HoverMenu
+    = TriggerLoad
+    deriving (Generic, ViewAction)
+  type Require HoverMenu = '[Feedback]
+  update TriggerLoad = pure hoverMenu
+
+
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
 tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
   let f = fieldNames @Submission
@@ -120,14 +130,24 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
     col ~ grow $ do
       field (program f) $ do
         header "Code Input"
-        textarea (Just $ program contents) ~ bg Editor . grow
+        textarea (Just $ program contents) ~ bg Editor . grow @ value (program contents)
       submit "Submit" ~ bg UIElem . color UIText
     col ~ grow . maxWidth (Pct 0.43) $ do
       field (config f) $ do
         header "Config"
-        textarea (Just $ config contents) ~ bg Editor . grow
+        textarea (Just $ config contents) ~ bg Editor . grow @ value (config contents)
       header "Feedback"
       el (text $ pack feedback) ~ bg bgColor . color textColor . grow . whiteSpace PreWrap . maxHeight (Pct 0.15)
+
+
+hoverMenu :: View HoverMenu ()
+hoverMenu = el ~ stack @ class_ "dropdown-examples" $ do
+  buttonMock "Load Examples"
+  ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
+    let numerals = list Decimal
+    li ~ numerals $ target Feedback $ button (Load "test-files/Task01") "Task01"
+    li ~ numerals $ "Task03"
+    li ~ numerals $ "Task08"
 
 
 main :: IO ()
@@ -136,7 +156,7 @@ main = do
     liveApp quickStartDocument (runPage page)
 
 
-page :: IOE :> es => Page es '[Feedback]
+page :: IOE :> es => Page es '[HoverMenu, Feedback]
 page = do
   program <- loadFile "test-files/Task01.hs"
   config <- loadFile "test-files/Task01.conf"
@@ -144,13 +164,7 @@ page = do
     row ~ bg UIElem . color UIText $ do
       header "Title"
       space
-      el ~ stack @ class_ "dropdown-examples" $ do
-        buttonMock "Load Example"
-        ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
-          let numerals = list Decimal
-          li ~ numerals $ "Task01"
-          li ~ numerals $ "Task03"
-          li ~ numerals $ "Task08"
+      hyper HoverMenu hoverMenu
       space
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
