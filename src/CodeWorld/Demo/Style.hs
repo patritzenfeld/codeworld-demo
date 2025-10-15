@@ -19,6 +19,7 @@ import Web.Atomic.CSS (
   ToColor(..),
   WhiteSpace(PreWrap),
   bg,
+  bold,
   color,
   css,
   grow,
@@ -81,4 +82,4 @@ feedbackStyle = grow . whiteSpace PreWrap . maxHeight (Pct 0.25) . verticalScrol
 
 
 uiStyle :: Styleable a => CSS a -> CSS a
-uiStyle = bg UIElem . color UIText
+uiStyle = bg UIElem . color UIText . bold

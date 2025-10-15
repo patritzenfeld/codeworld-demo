@@ -121,10 +121,9 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
 
 hoverMenu :: [FilePath] -> View HoverMenu ()
 hoverMenu paths = el ~ stack @ class_ "dropdown-examples" $ do
-  el "Load Examples" ~ mousePointer
-  ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
-    let numerals = list Decimal
-    mapM_ (\task -> li ~ numerals $ target Feedback $ button (Load task) $ fromString task)
+  header "Load Examples" ~ mousePointer
+  ol ~ popup (T 20) . visibility Hidden . displayOnHover . uiStyle . width (Pct 1) $ do
+    mapM_ (\task -> li ~ uiStyle $ target Feedback $ button (Load task) $ fromString task)
           paths
 
 
@@ -140,9 +139,9 @@ page = do
     Just path -> loadPreset path
   pure $ do
     row ~ uiStyle $ do
-      header "Title"
+      header "CodeWorld Tasks Demo"
       space
-      hyper HoverMenu $ hoverMenu paths
+      hyper HoverMenu (hoverMenu paths) ~ minWidth (PxRem 5)
       space
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
