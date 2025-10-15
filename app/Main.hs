@@ -21,7 +21,7 @@ import Control.Monad.Writer             (WriterT, runWriterT, tell)
 import Data.Text                        (Text, pack, unpack)
 import Effectful                        (IOE, MonadIO, liftIO)
 import Haskell.Template.Task            (grade)
-import System.FilePath
+import System.FilePath                  ((</>), (<.>))
 import System.Directory                 (getTemporaryDirectory)
 import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
@@ -30,33 +30,6 @@ import Web.Atomic.CSS.Layout
 
 import CodeWorld.Demo.Style
 
-
-
-data AppColor
-  = Editor
-  | Background
-  | DefaultText
-  | UIElem
-  | UIText
-  | FeedbackOkay
-  | FeedbackRejected
-  | FeedbackRejectedText
-  | FeedbackSuggestion
-  | FeedbackSuggestionText
-  deriving (Show)
-
-
-instance ToColor AppColor where
-  colorValue UIText = "#FFF" -- white
-  colorValue Editor = "#D3D3D3" -- light gray
-  colorValue Background = "#626262" -- dark gray
-  colorValue UIElem = "#800000" -- dark red
-  colorValue FeedbackOkay = "#008000" -- green
-  colorValue FeedbackRejected = "#B32821" -- bright red
-  colorValue FeedbackRejectedText = "#009ED4" -- light blue
-  colorValue FeedbackSuggestion = "#FF8A00" -- orange
-  colorValue FeedbackSuggestionText = "#4A00FF" -- navy blue
-  colorValue DefaultText = "#000" -- black
 
 
 data Submission f = Submission
@@ -133,19 +106,19 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
     col ~ grow $ do
       field (program f) $ do
         header "Code Input"
-        textarea (Just $ program contents) ~ bg Editor . grow @ value (program contents)
-      submit "Submit" ~ bg UIElem . color UIText
+        textarea (Just $ program contents) ~ textAreaStyle @ value (program contents)
+      submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
       field (config f) $ do
         header "Config"
-        textarea (Just $ config contents) ~ bg Editor . grow @ value (config contents)
+        textarea (Just $ config contents) ~ textAreaStyle @ value (config contents)
       header "Feedback"
-      el (text $ pack feedback) ~ bg bgColor . color textColor . grow . whiteSpace PreWrap . maxHeight (Pct 0.25) . verticalScroll
+      el (text $ pack feedback) ~ feedbackStyle . bg bgColor . color textColor
 
 
 hoverMenu :: View HoverMenu ()
 hoverMenu = el ~ stack @ class_ "dropdown-examples" $ do
-  buttonMock "Load Examples"
+  el "Load Examples" ~ mousePointer
   ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
     let numerals = list Decimal
     li ~ numerals $ target Feedback $ button (Load "Task01") "Task01"
@@ -164,7 +137,7 @@ page = do
   program <- loadTask "Task01"
   config <- loadConfig "Task01"
   pure $ do
-    row ~ bg UIElem . color UIText $ do
+    row ~ uiStyle $ do
       header "Title"
       space
       hyper HoverMenu hoverMenu
