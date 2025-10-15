@@ -91,8 +91,8 @@ instance IOE :> es => HyperView Feedback es where
     | Load FilePath
     deriving (Generic, ViewAction)
   update (Load path) = do
-    config <- loadFile $ path <.> "conf"
-    program <- loadFile $ path <.> "hs"
+    config <- loadConfig path
+    program <- loadTask path
     let submission = Submission {config, program}
     pure $ tAreaForm submission "" (Editor, DefaultText)
 
@@ -137,7 +137,7 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         header "Config"
         textarea (Just $ config contents) ~ bg Editor . grow @ value (config contents)
       header "Feedback"
-      el (text $ pack feedback) ~ bg bgColor . color textColor . grow . whiteSpace PreWrap . maxHeight (Pct 0.15)
+      el (text $ pack feedback) ~ bg bgColor . color textColor . grow . whiteSpace PreWrap . maxHeight (Pct 0.25) . verticalScroll
 
 
 hoverMenu :: View HoverMenu ()
@@ -145,9 +145,9 @@ hoverMenu = el ~ stack @ class_ "dropdown-examples" $ do
   buttonMock "Load Examples"
   ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
     let numerals = list Decimal
-    li ~ numerals $ target Feedback $ button (Load "test-files/Task01") "Task01"
-    li ~ numerals $ "Task03"
-    li ~ numerals $ "Task08"
+    li ~ numerals $ target Feedback $ button (Load "Task01") "Task01"
+    li ~ numerals $ target Feedback $ button (Load "Task03") "Task03"
+    li ~ numerals $ target Feedback $ button (Load "Task08") "Task08"
 
 
 main :: IO ()
@@ -158,8 +158,8 @@ main = do
 
 page :: IOE :> es => Page es '[HoverMenu, Feedback]
 page = do
-  program <- loadFile "test-files/Task01.hs"
-  config <- loadFile "test-files/Task01.conf"
+  program <- loadTask "Task01"
+  config <- loadConfig "Task01"
   pure $ do
     row ~ bg UIElem . color UIText $ do
       header "Title"
@@ -178,8 +178,8 @@ buttonMock = tag "button"
 
 displayOnHover :: Styleable h => CSS h -> CSS h
 displayOnHover = css
-    ""
-    ".dropdown-examples:hover ol"
+    "hover-reveal"
+    ".dropdown-examples:hover .hover-reveal"
     [ "visibility" :. "visible"
     ]
 
@@ -190,4 +190,15 @@ header txt = do
 
 
 loadFile :: MonadIO m => FilePath -> m Text
-loadFile = liftIO . fmap pack . readFile
+loadFile = liftIO . fmap pack . readFile . ("test-files" </>) . (<.> "hs")
+
+
+loadConfig :: MonadIO m => FilePath -> m Text
+loadConfig = loadFile . ("configs" </>)
+
+loadTask :: MonadIO m => FilePath -> m Text
+loadTask = loadFile . ("tasks" </>)
+
+
+verticalScroll :: Styleable h => CSS h -> CSS h
+verticalScroll = utility "v-scroll" ["overflow-y" :. "auto"]
