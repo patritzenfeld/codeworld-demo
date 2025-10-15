@@ -129,9 +129,7 @@ hoverMenu paths = el ~ stack @ class_ "dropdown-examples" $ do
 
 
 main :: IO ()
-main = do
-  run 3000 $ do
-    liveApp quickStartDocument (runPage page)
+main = run 3000 $ liveApp quickStartDocument $ runPage page
 
 
 page :: IOE :> es => Page es '[HoverMenu, Feedback]
@@ -154,8 +152,7 @@ page = do
 
 
 header :: Text -> View ctx ()
-header txt = do
-  el ~ bold $ text txt
+header = (el ~ bold) . text
 
 
 availableTasks :: MonadIO m => m [FilePath]
@@ -167,7 +164,4 @@ loadFile = liftIO . fmap pack . readFile . ("templates" </>)
 
 
 loadPreset :: MonadIO m => FilePath -> m (Text,Text)
-loadPreset path = do
-  config <- loadFile $ "configs" </> path
-  program <- loadFile $ "tasks" </> path
-  pure (config,program)
+loadPreset = liftA2 (,) <$> loadFile . ("configs" </>) <*> loadFile . ("tasks" </>)
