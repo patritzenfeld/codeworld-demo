@@ -18,11 +18,14 @@ module Main where
 import Control.Monad                    (void)
 import Control.Monad.Except             (ExceptT, runExceptT, throwError)
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
+import Data.List                        (sort)
+import Data.Maybe                       (listToMaybe)
+import Data.String                      (fromString)
 import Data.Text                        (Text, pack, unpack)
 import Effectful                        (IOE, MonadIO, liftIO)
 import Haskell.Template.Task            (grade)
-import System.FilePath                  ((</>), (<.>))
-import System.Directory                 (getTemporaryDirectory)
+import System.FilePath                  ((</>))
+import System.Directory                 (getTemporaryDirectory, listDirectory)
 import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
 import Web.Atomic.CSS
@@ -67,8 +70,7 @@ instance IOE :> es => HyperView Feedback es where
     | Load FilePath
     deriving (Generic, ViewAction)
   update (Load path) = do
-    config <- loadConfig path
-    program <- loadTask path
+    (config,program) <- loadPreset path
     let submission = Submission {config, program}
     pure $ tAreaForm submission "" (Editor, DefaultText)
 
@@ -96,7 +98,8 @@ instance HyperView HoverMenu es where
     = TriggerLoad
     deriving (Generic, ViewAction)
   type Require HoverMenu = '[Feedback]
-  update TriggerLoad = pure hoverMenu
+  -- never called. This has to be doable without a HyperView instance???
+  update TriggerLoad = undefined
 
 
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
@@ -116,14 +119,13 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
       el (text $ pack feedback) ~ feedbackStyle . bg bgColor . color textColor
 
 
-hoverMenu :: View HoverMenu ()
-hoverMenu = el ~ stack @ class_ "dropdown-examples" $ do
+hoverMenu :: [FilePath] -> View HoverMenu ()
+hoverMenu paths = el ~ stack @ class_ "dropdown-examples" $ do
   el "Load Examples" ~ mousePointer
   ol ~ popup (TL 20 10) . visibility Hidden . displayOnHover $ do
     let numerals = list Decimal
-    li ~ numerals $ target Feedback $ button (Load "Task01") "Task01"
-    li ~ numerals $ target Feedback $ button (Load "Task03") "Task03"
-    li ~ numerals $ target Feedback $ button (Load "Task08") "Task08"
+    mapM_ (\task -> li ~ numerals $ target Feedback $ button (Load task) $ fromString task)
+          paths
 
 
 main :: IO ()
@@ -134,13 +136,15 @@ main = do
 
 page :: IOE :> es => Page es '[HoverMenu, Feedback]
 page = do
-  program <- loadTask "Task01"
-  config <- loadConfig "Task01"
+  paths <- availableTasks
+  (config,program) <- case listToMaybe paths of
+    Nothing -> return ("","")
+    Just path -> loadPreset path
   pure $ do
     row ~ uiStyle $ do
       header "Title"
       space
-      hyper HoverMenu hoverMenu
+      hyper HoverMenu $ hoverMenu paths
       space
       nav $ do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
@@ -149,21 +153,21 @@ page = do
     hyper Feedback (tAreaForm submission "" (Editor, DefaultText)) ~ display Flex . grow
 
 
-buttonMock :: View c () -> View c ()
-buttonMock = tag "button"
-
-
 header :: Text -> View ctx ()
 header txt = do
   el ~ bold $ text txt
 
 
+availableTasks :: MonadIO m => m [FilePath]
+availableTasks = liftIO $ fmap sort $ listDirectory $ "templates" </> "configs"
+
+
 loadFile :: MonadIO m => FilePath -> m Text
-loadFile = liftIO . fmap pack . readFile . ("test-files" </>) . (<.> "hs")
+loadFile = liftIO . fmap pack . readFile . ("templates" </>)
 
 
-loadConfig :: MonadIO m => FilePath -> m Text
-loadConfig = loadFile . ("configs" </>)
-
-loadTask :: MonadIO m => FilePath -> m Text
-loadTask = loadFile . ("tasks" </>)
+loadPreset :: MonadIO m => FilePath -> m (Text,Text)
+loadPreset path = do
+  config <- loadFile $ "configs" </> path
+  program <- loadFile $ "tasks" </> path
+  pure (config,program)
