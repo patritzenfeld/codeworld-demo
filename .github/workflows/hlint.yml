@@ -25,5 +25,5 @@ jobs:
       - name: 'Run HLint'
         uses: haskell-actions/hlint-run@eaca4cfbf4a69f4eb875df38b6bc3e1657020378 # v2.4.10
         with:
-          path: '["src/"]'
+          path: '["src/","app/"]'
           fail-on: suggestion
