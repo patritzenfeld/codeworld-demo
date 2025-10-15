@@ -33,7 +33,6 @@ import Web.Atomic.CSS.Layout (maxHeight)
 data AppColor
   = Editor
   | Background
-  | DefaultText
   | UIElem
   | UIText
   | FeedbackOkay
@@ -46,15 +45,14 @@ data AppColor
 
 instance ToColor AppColor where
   colorValue UIText = "#FFF" -- white
-  colorValue Editor = "#D3D3D3" -- light gray
-  colorValue Background = "#626262" -- dark gray
+  colorValue Editor = "#FFF" -- white
+  colorValue Background = "#D3D3D3" -- light gray
   colorValue UIElem = "#800000" -- dark red
   colorValue FeedbackOkay = "#008000" -- green
-  colorValue FeedbackRejected = "#B32821" -- bright red
-  colorValue FeedbackRejectedText = "#009ED4" -- light blue
+  colorValue FeedbackRejected = "#842b26" -- bright red
+  colorValue FeedbackRejectedText = "#FFF" -- white
   colorValue FeedbackSuggestion = "#FF8A00" -- orange
-  colorValue FeedbackSuggestionText = "#4A00FF" -- navy blue
-  colorValue DefaultText = "#000" -- black
+  colorValue FeedbackSuggestionText = "#000" -- black
 
 
 mousePointer :: Styleable h => CSS h -> CSS h

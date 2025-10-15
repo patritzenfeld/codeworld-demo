@@ -72,7 +72,7 @@ instance IOE :> es => HyperView Feedback es where
   update (Load path) = do
     (config,program) <- loadPreset path
     let submission = Submission {config, program}
-    pure $ tAreaForm submission "" (Editor, DefaultText)
+    pure $ tAreaForm submission "" (Editor, UIText)
 
   update Submit = do
     f <- formData @(Submission Identity)
@@ -88,7 +88,7 @@ instance IOE :> es => HyperView Feedback es where
     let feedback = show doc
     let colors = case (status, feedback) of
           (Left Reject, _) -> (FeedbackRejected,FeedbackRejectedText)
-          (_, [])          -> (FeedbackOkay, DefaultText)
+          (_, [])          -> (FeedbackOkay, UIText)
           _                -> (FeedbackSuggestion, FeedbackSuggestionText)
     pure $ tAreaForm f feedback colors
 
@@ -147,7 +147,7 @@ page = do
         link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
         link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
     let submission = Submission {config, program}
-    hyper Feedback (tAreaForm submission "" (Editor, DefaultText)) ~ display Flex . grow
+    hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
 
 
 header :: Text -> View ctx ()
