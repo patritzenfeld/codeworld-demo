@@ -5,32 +5,17 @@ module CodeWorld.Demo.Style (
   anchorStyle,
   displayOnHover,
   feedbackStyle,
+  listStyle,
   mousePointer,
   noResize,
+  popupStyle,
   textAreaStyle,
   uiStyle,
   verticalScroll,
 ) where
 
 
-import Web.Atomic.CSS (
-  Align(AlignCenter),
-  CSS,
-  Declaration((:.)),
-  Length(Pct),
-  Styleable,
-  ToColor(..),
-  WhiteSpace(PreWrap),
-  bg,
-  bold,
-  color,
-  css,
-  grow,
-  textAlign,
-  pad,
-  whiteSpace,
-  utility
-  )
+import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout (maxHeight)
 
 
@@ -90,6 +75,14 @@ uiStyle = bg UIElem . color UIText . bold . textAlign AlignCenter . pad 10
 
 anchorStyle :: Styleable a => CSS a -> CSS a
 anchorStyle = pad 10
+
+
+popupStyle :: Styleable a => Sides Length -> CSS a -> CSS a
+popupStyle size = popup size . visibility Hidden . displayOnHover . width (Pct 1)
+
+
+listStyle :: Styleable a => CSS a -> CSS a
+listStyle = uiStyle ~ border 1
 
 
 noResize :: Styleable h => CSS h -> CSS h

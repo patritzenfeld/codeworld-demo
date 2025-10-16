@@ -127,8 +127,8 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
 hoverMenu :: [FilePath] -> View HoverMenu ()
 hoverMenu paths = el ~ stack @ class_ "dropdown-examples" $ do
   heading "Load Examples" ~ mousePointer
-  ol ~ popup (T 20) . visibility Hidden . displayOnHover . uiStyle . width (Pct 1) $
-    mapM_ ((li ~ uiStyle) . target Feedback . liftA2 button Load fromString) paths
+  ol ~ popupStyle (T 20) . uiStyle $
+    mapM_ ((li ~ listStyle) . target Feedback . liftA2 button Load fromString) paths
 
 
 main :: IO ()
