@@ -32,6 +32,7 @@ import System.FilePath                  ((</>))
 import System.Directory                 (getTemporaryDirectory, listDirectory)
 import Text.PrettyPrint.Leijen.Text     (Doc)
 import Web.Hyperbole
+import Web.Hyperbole.HyperView.Forms    (Input)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout
 
@@ -113,12 +114,12 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
     col ~ grow $ do
       field (program f) $ do
         header "Code Input"
-        textarea (Just $ program contents) ~ textAreaStyle @ value (program contents)
+        filledTextarea $ program contents
       submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
       field (config f) $ do
         header "Config"
-        textarea (Just $ config contents) ~ textAreaStyle @ value (config contents)
+        filledTextarea $ config contents
       header "Feedback"
       el (fromString feedback) ~ feedbackStyle . bg bgColor . color textColor
 
@@ -153,8 +154,12 @@ page = do
     hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
 
 
-header :: Text -> View ctx ()
+header :: Text -> View a ()
 header = (el ~ bold) . text
+
+
+filledTextarea :: Text -> View (Input id a) ()
+filledTextarea contents = textarea (Just contents) ~ textAreaStyle @ value contents
 
 
 availableTasks :: MonadIO m => m [FilePath]
