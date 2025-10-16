@@ -38,6 +38,7 @@ library
     , base >=4.7 && <5
     , directory
     , effectful-core
+    , extra
     , filepath
     , haskell-template-task
     , haskell-template-task-raw
@@ -64,6 +65,7 @@ executable codeworld-demo-exe
     , codeworld-tasks
     , directory
     , effectful-core
+    , extra
     , filepath
     , haskell-template-task
     , haskell-template-task-raw
@@ -89,6 +91,7 @@ test-suite codeworld-demo-test
     , codeworld-demo
     , directory
     , effectful-core
+    , extra
     , filepath
     , haskell-template-task
     , haskell-template-task-raw

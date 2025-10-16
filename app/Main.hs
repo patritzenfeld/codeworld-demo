@@ -15,13 +15,17 @@
 module Main where
 
 
+import qualified Data.Text              as T
+import qualified Data.Text.IO           as T
+
 import Control.Monad                    (void)
 import Control.Monad.Except             (ExceptT, runExceptT, throwError)
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
-import Data.List                        (sort)
+import Data.List.Extra                  (sort, split)
 import Data.Maybe                       (listToMaybe)
 import Data.String                      (fromString)
-import Data.Text                        (Text, pack, unpack)
+import Data.Text                        (Text, unpack)
+import Data.Tuple.Extra                 ((&&&))
 import Effectful                        (IOE, MonadIO, liftIO)
 import Haskell.Template.Task            (grade)
 import System.FilePath                  ((</>))
@@ -116,7 +120,7 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         header "Config"
         textarea (Just $ config contents) ~ textAreaStyle @ value (config contents)
       header "Feedback"
-      el (text $ pack feedback) ~ feedbackStyle . bg bgColor . color textColor
+      el (fromString feedback) ~ feedbackStyle . bg bgColor . color textColor
 
 
 hoverMenu :: [FilePath] -> View HoverMenu ()
@@ -135,7 +139,7 @@ page :: IOE :> es => Page es '[HoverMenu, Feedback]
 page = do
   paths <- availableTasks
   (config,program) <- case listToMaybe paths of
-    Nothing -> return ("","")
+    Nothing -> pure ("","")
     Just path -> loadPreset path
   pure $ do
     row ~ uiStyle $ do
@@ -155,12 +159,21 @@ header = (el ~ bold) . text
 
 
 availableTasks :: MonadIO m => m [FilePath]
-availableTasks = liftIO $ fmap sort $ listDirectory $ "templates" </> "configs"
-
-
-loadFile :: MonadIO m => FilePath -> m Text
-loadFile = liftIO . fmap pack . readFile . ("templates" </>)
+availableTasks = liftIO $ sort <$> listDirectory examplesDirectory
 
 
 loadPreset :: MonadIO m => FilePath -> m (Text,Text)
-loadPreset = liftA2 (,) <$> loadFile . ("configs" </>) <*> loadFile . ("tasks" </>)
+loadPreset = liftIO .
+  fmap (id &&& taskFromConfig) . T.readFile . (examplesDirectory </>)
+
+
+splitConfig :: Text -> [Text]
+splitConfig = map T.unlines . split ("---" `T.isPrefixOf`) . T.lines
+
+
+taskFromConfig :: Text -> Text
+taskFromConfig = (!! 1) . splitConfig
+
+
+examplesDirectory :: FilePath
+examplesDirectory = "templates"
