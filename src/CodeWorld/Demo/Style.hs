@@ -2,9 +2,11 @@
 
 module CodeWorld.Demo.Style (
   AppColor(..),
+  anchorStyle,
   displayOnHover,
   feedbackStyle,
   mousePointer,
+  noResize,
   textAreaStyle,
   uiStyle,
   verticalScroll,
@@ -12,6 +14,7 @@ module CodeWorld.Demo.Style (
 
 
 import Web.Atomic.CSS (
+  Align(AlignCenter),
   CSS,
   Declaration((:.)),
   Length(Pct),
@@ -23,6 +26,8 @@ import Web.Atomic.CSS (
   color,
   css,
   grow,
+  textAlign,
+  pad,
   whiteSpace,
   utility
   )
@@ -80,4 +85,12 @@ feedbackStyle = grow . whiteSpace PreWrap . maxHeight (Pct 0.25) . verticalScrol
 
 
 uiStyle :: Styleable a => CSS a -> CSS a
-uiStyle = bg UIElem . color UIText . bold
+uiStyle = bg UIElem . color UIText . bold . textAlign AlignCenter . pad 10
+
+
+anchorStyle :: Styleable a => CSS a -> CSS a
+anchorStyle = pad 10
+
+
+noResize :: Styleable h => CSS h -> CSS h
+noResize = utility "no-resize" ["resize" :. "none"]

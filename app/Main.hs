@@ -113,20 +113,20 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
   row ~ grow . pad 10 . gap 10 ~ bg Background $ do
     col ~ grow $ do
       field (program f) $ do
-        header "Code Input"
-        filledTextarea $ program contents
+        heading "Code Input"
+        filledTextarea (program contents) ~ noResize
       submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
       field (config f) $ do
-        header "Config"
+        heading "Config"
         filledTextarea $ config contents
-      header "Feedback"
+      heading "Feedback"
       el (fromString feedback) ~ feedbackStyle . bg bgColor . color textColor
 
 
 hoverMenu :: [FilePath] -> View HoverMenu ()
 hoverMenu paths = el ~ stack @ class_ "dropdown-examples" $ do
-  header "Load Examples" ~ mousePointer
+  heading "Load Examples" ~ mousePointer
   ol ~ popup (T 20) . visibility Hidden . displayOnHover . uiStyle . width (Pct 1) $
     mapM_ ((li ~ uiStyle) . target Feedback . liftA2 button Load fromString) paths
 
@@ -143,19 +143,23 @@ page = do
     Just path -> loadPreset path
   pure $ do
     row ~ uiStyle $ do
-      header "CodeWorld Tasks Demo"
+      heading "CodeWorld Tasks Demo"
       space
       hyper HoverMenu (hoverMenu paths) ~ minWidth (PxRem 5)
       space
       nav $ do
-        link [uri|https://fmidue.github.io/codeworld-tasks/|] "Docs"
-        link [uri|https://github.com/fmidue/codeworld-tasks|] "Repo"
+        anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
+        anchor "Repo" [uri|https://github.com/fmidue/codeworld-tasks|]
     let submission = Submission {config, program}
     hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
 
 
-header :: Text -> View a ()
-header = (el ~ bold) . text
+heading :: Text -> View a ()
+heading = (el ~ bold) . text
+
+
+anchor :: View c () -> URI -> View c ()
+anchor = flip link ~ anchorStyle
 
 
 filledTextarea :: Text -> View (Input id a) ()
