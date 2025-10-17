@@ -38,8 +38,9 @@ main :: IO ()
 main = run 3000 $ liveApp quickStartDocument $ runPage page
 
 
-page :: IOE :> es => Page es '[HoverMenu, Feedback]
+page :: (IOE :> es, Hyperbole :> es) => Page es '[HoverMenu, Feedback]
 page = do
+  pageTitle "CodeWorld Tasks Demo"
   paths <- availableTasks
   (config,program) <- case listToMaybe paths of
     Nothing -> pure ("","")
