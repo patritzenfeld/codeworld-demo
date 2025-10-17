@@ -13,6 +13,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module CodeWorld.Demo.View (
+  ConfigPart(..),
   Feedback(..),
   Submission(..),
   externalNav,
@@ -36,8 +37,11 @@ import Web.Atomic.CSS (
   fontSize,
   grow,
   bold,
+  stack,
+  visibility,
   Length(Pct),
   Sides(T),
+  Visibility(..),
   )
 import Web.Atomic.CSS.Layout            (maxWidth)
 
@@ -69,23 +73,30 @@ data Submission f = Submission
 data Feedback = Feedback
   deriving (Generic, ViewId)
 
+data ConfigPart = Settings | Template | Tests
+  deriving (Generic, ToParam, FromParam)
+
 
 instance IOE :> es => HyperView Feedback es where
   data Action Feedback
     = Submit
     | Load FilePath
+    | Open ConfigPart
     deriving (Generic, ViewAction)
   update (Load path) = do
     confSegments <- loadPreset path
     submission <- readConfig confSegments
-    pure $ tAreaForm submission "" (Editor, UIText)
+    pure $ tAreaForm submission "" (Editor, UIText) Tests
 
   update Submit = do
     f <- formData @(Submission Identity)
     let config = T.intercalate "---\n" [settings f, template f, tests f]
     (colors, feedback) <- gradeSubmission config (program f)
-    pure $ tAreaForm f feedback colors
+    pure $ tAreaForm f feedback colors Tests
 
+  update (Open cp) = do
+    f <- formData @(Submission Identity)
+    pure $ tAreaForm f "" (Editor, UIText) cp
 
 externalNav :: View a ()
 externalNav = nav $ do
@@ -97,8 +108,8 @@ anchor :: View c () -> URI -> View c ()
 anchor = flip link ~ anchorStyle
 
 
-tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
-tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
+tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> ConfigPart -> View Feedback ()
+tAreaForm contents feedback (bgColor, textColor) focus = form Submit ~ grow $ do
   let f = fieldNames @Submission
   row ~ mainSectionStyle $ do
     col ~ grow $ do
@@ -107,15 +118,28 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         filledTextarea (program contents) ~ noResize
       submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
-      heading "Config"
-      field (settings f) $ do
-        filledTextarea $ settings contents
-      field (template f) $ do
-        filledTextarea $ template contents
-      field (tests f) $ do
-        filledTextarea $ tests contents
+      row $ do
+        heading "Config"
+        addContext Feedback $ do
+          button (Open Settings) "Edit Settings" @ type_ "submit"
+          button (Open Template) "Edit Task Template" @ type_ "submit"
+          button (Open Tests) "Edit Tests" @ type_ "submit"
+      el ~ stack . grow $ do
+        field (settings f) $ do
+          filledTextarea ~ a $ settings contents
+        field (template f) $ do
+          filledTextarea ~ b $ template contents
+        field (tests f) $ do
+          filledTextarea ~ c $ tests contents
       heading "Feedback"
       el (fromString feedback) ~ feedbackStyle bgColor textColor
+  where
+    vis = visibility Visible
+    hidden = visibility Hidden
+    (a,b,c) = case focus of
+      Settings -> (vis,hidden,hidden)
+      Template -> (hidden,vis,hidden)
+      Tests    -> (hidden,hidden,vis)
 
 
 hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()

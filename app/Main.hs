@@ -22,6 +22,7 @@ import CodeWorld.Demo.Server (
   )
 import CodeWorld.Demo.Style             (AppColor(..), uiStyle)
 import CodeWorld.Demo.View (
+  ConfigPart(..),
   Feedback(..),
   externalNav,
   heading,
@@ -51,4 +52,4 @@ page = do
       hoverMenu paths
       space
       externalNav
-    hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
+    hyper Feedback (tAreaForm submission "" (Editor, UIText) Settings) ~ display Flex . grow
