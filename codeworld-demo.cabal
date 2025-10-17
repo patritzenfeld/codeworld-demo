@@ -28,6 +28,7 @@ library
       CodeWorld.Demo.CssRules
       CodeWorld.Demo.Server
       CodeWorld.Demo.Style
+      CodeWorld.Demo.View
   other-modules:
       Paths_codeworld_demo
   autogen-modules:
