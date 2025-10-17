@@ -14,7 +14,6 @@
 
 module CodeWorld.Demo.View (
   Feedback(..),
-  HoverMenu(..),
   Submission(..),
   externalNav,
   heading,
@@ -88,19 +87,6 @@ instance IOE :> es => HyperView Feedback es where
     pure $ tAreaForm f feedback colors
 
 
-data HoverMenu = HoverMenu
-  deriving (Generic, ViewId)
-
-
-instance HyperView HoverMenu es where
-  data Action HoverMenu
-    = None
-    deriving (Generic, ViewAction)
-  type Require HoverMenu = '[Feedback]
-  -- Never called. Found the same kind of pattern in the library.
-  update _ = pure none
-
-
 externalNav :: View a ()
 externalNav = nav $ do
   anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
@@ -132,7 +118,7 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
       el (fromString feedback) ~ feedbackStyle bgColor textColor
 
 
-hoverMenu :: [FilePath] -> View HoverMenu ()
+hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()
 hoverMenu paths = do
   let parentClass = "dropdown-examples"
   el ~ hoverMenuStyle @ class_ parentClass $ do

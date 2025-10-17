@@ -2,7 +2,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE NamedFieldPuns #-}
 
 module Main where
 
@@ -24,7 +23,6 @@ import CodeWorld.Demo.Server (
 import CodeWorld.Demo.Style             (AppColor(..), uiStyle)
 import CodeWorld.Demo.View (
   Feedback(..),
-  HoverMenu(..),
   externalNav,
   heading,
   hoverMenu,
@@ -38,7 +36,7 @@ main :: IO ()
 main = run 3000 $ liveApp quickStartDocument $ runPage page
 
 
-page :: (IOE :> es, Hyperbole :> es) => Page es '[HoverMenu, Feedback]
+page :: (IOE :> es, Hyperbole :> es) => Page es '[Feedback]
 page = do
   pageTitle "CodeWorld Tasks Demo"
   paths <- availableTasks
@@ -50,7 +48,7 @@ page = do
     row ~ uiStyle $ do
       heading "CodeWorld Tasks Demo"
       space
-      hyper HoverMenu $ hoverMenu paths
+      hoverMenu paths
       space
       externalNav
     hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
