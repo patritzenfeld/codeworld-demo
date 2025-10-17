@@ -36,6 +36,7 @@ import Web.Hyperbole.HyperView.Forms    (Input)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout
 
+import CodeWorld.Demo.CssRules
 import CodeWorld.Demo.Style
 
 

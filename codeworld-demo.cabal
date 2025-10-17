@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      CodeWorld.Demo.CssRules
       CodeWorld.Demo.Style
   other-modules:
       Paths_codeworld_demo

@@ -3,21 +3,20 @@
 module CodeWorld.Demo.Style (
   AppColor(..),
   anchorStyle,
-  displayOnHover,
   feedbackStyle,
   listStyle,
-  noResize,
   popupStyle,
   textAreaStyle,
   uiStyle,
-  verticalScroll,
 ) where
 
 
 import Data.Text                        (Text)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout            (maxHeight)
-import Web.Atomic.Types                 (className, selector)
+
+import CodeWorld.Demo.CssRules
+
 
 
 data AppColor
@@ -45,20 +44,6 @@ instance ToColor AppColor where
   colorValue FeedbackSuggestionText = "#000" -- black
 
 
-verticalScroll :: Styleable h => CSS h -> CSS h
-verticalScroll = utility "v-scroll" ["overflow-y" :. "auto"]
-
-
-displayOnHover :: Styleable h => Text -> CSS h -> CSS h
-displayOnHover parentClass = css
-    childClass
-    (selector (className parentClass) <> ":hover" <> " " <> selector childClass)
-    [ "visibility" :. "visible"
-    ]
-  where
-    childClass = "hover-reveal"
-
-
 textAreaStyle :: Styleable a => CSS a -> CSS a
 textAreaStyle = bg Editor . grow
 
@@ -81,7 +66,3 @@ popupStyle parent size = popup size . visibility Hidden . displayOnHover parent 
 
 listStyle :: Styleable a => CSS a -> CSS a
 listStyle = uiStyle ~ border 1
-
-
-noResize :: Styleable h => CSS h -> CSS h
-noResize = utility "no-resize" ["resize" :. "none"]
