@@ -6,7 +6,6 @@ module CodeWorld.Demo.Style (
   displayOnHover,
   feedbackStyle,
   listStyle,
-  mousePointer,
   noResize,
   popupStyle,
   textAreaStyle,
@@ -15,9 +14,10 @@ module CodeWorld.Demo.Style (
 ) where
 
 
+import Data.Text                        (Text)
 import Web.Atomic.CSS
-import Web.Atomic.CSS.Layout (maxHeight)
-
+import Web.Atomic.CSS.Layout            (maxHeight)
+import Web.Atomic.Types                 (className, selector)
 
 
 data AppColor
@@ -37,28 +37,26 @@ instance ToColor AppColor where
   colorValue UIText = "#FFF" -- white
   colorValue Editor = "#FFF" -- white
   colorValue Background = "#D3D3D3" -- light gray
-  colorValue UIElem = "#800000" -- dark red
+  colorValue UIElem = "#800000" -- darker red
   colorValue FeedbackOkay = "#008000" -- green
-  colorValue FeedbackRejected = "#842b26" -- bright red
+  colorValue FeedbackRejected = "#842b26" -- dark red
   colorValue FeedbackRejectedText = "#FFF" -- white
   colorValue FeedbackSuggestion = "#FF8A00" -- orange
   colorValue FeedbackSuggestionText = "#000" -- black
-
-
-mousePointer :: Styleable h => CSS h -> CSS h
-mousePointer = utility "mouse-pointer" ["cursor" :. "pointer"]
 
 
 verticalScroll :: Styleable h => CSS h -> CSS h
 verticalScroll = utility "v-scroll" ["overflow-y" :. "auto"]
 
 
-displayOnHover :: Styleable h => CSS h -> CSS h
-displayOnHover = css
-    "hover-reveal"
-    ".dropdown-examples:hover .hover-reveal"
+displayOnHover :: Styleable h => Text -> CSS h -> CSS h
+displayOnHover parentClass = css
+    childClass
+    (selector (className parentClass) <> ":hover" <> " " <> selector childClass)
     [ "visibility" :. "visible"
     ]
+  where
+    childClass = "hover-reveal"
 
 
 textAreaStyle :: Styleable a => CSS a -> CSS a
@@ -77,8 +75,8 @@ anchorStyle :: Styleable a => CSS a -> CSS a
 anchorStyle = pad 10
 
 
-popupStyle :: Styleable a => Sides Length -> CSS a -> CSS a
-popupStyle size = popup size . visibility Hidden . displayOnHover . width (Pct 1)
+popupStyle :: Styleable a => Text -> Sides Length -> CSS a -> CSS a
+popupStyle parent size = popup size . visibility Hidden . displayOnHover parent  . width (Pct 1)
 
 
 listStyle :: Styleable a => CSS a -> CSS a
