@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CodeWorld.Demo.Server where
+module CodeWorld.Demo.Server (
+  availableTasks,
+  gradeSubmission,
+  loadPreset,
+) where
 
 
 import qualified Data.Text              as T

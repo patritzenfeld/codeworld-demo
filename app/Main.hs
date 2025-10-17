@@ -24,8 +24,11 @@ import Web.Hyperbole.HyperView.Forms    (Input)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout
 
-import CodeWorld.Demo.CssRules
-import CodeWorld.Demo.Server
+import CodeWorld.Demo.Server (
+  availableTasks,
+  gradeSubmission,
+  loadPreset,
+  )
 import CodeWorld.Demo.Style
 
 

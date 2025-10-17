@@ -10,6 +10,8 @@ module CodeWorld.Demo.Style (
   popupStyle,
   textAreaStyle,
   uiStyle,
+  -- re-exported
+  noResize,
 ) where
 
 
