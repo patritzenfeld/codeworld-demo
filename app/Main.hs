@@ -72,6 +72,29 @@ instance HyperView HoverMenu es where
   update _ = pure none
 
 
+main :: IO ()
+main = run 3000 $ liveApp quickStartDocument $ runPage page
+
+
+page :: IOE :> es => Page es '[HoverMenu, Feedback]
+page = do
+  paths <- availableTasks
+  (config,program) <- case listToMaybe paths of
+    Nothing -> pure ("","")
+    Just path -> loadPreset path
+  pure $ do
+    row ~ uiStyle $ do
+      heading "CodeWorld Tasks Demo"
+      space
+      hyper HoverMenu $ hoverMenu paths
+      space
+      nav $ do
+        anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
+        anchor "Repo" [uri|https://github.com/fmidue/codeworld-tasks|]
+    let submission = Submission {config, program}
+    hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
+
+
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
 tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
   let f = fieldNames @Submission
@@ -96,29 +119,6 @@ hoverMenu paths = do
     heading "Load Examples" ~ pointer
     ol ~ popupStyle parentClass (T 20) . uiStyle $
       mapM_ ((li ~ listStyle) . target Feedback . liftA2 button Load fromString) paths
-
-
-main :: IO ()
-main = run 3000 $ liveApp quickStartDocument $ runPage page
-
-
-page :: IOE :> es => Page es '[HoverMenu, Feedback]
-page = do
-  paths <- availableTasks
-  (config,program) <- case listToMaybe paths of
-    Nothing -> pure ("","")
-    Just path -> loadPreset path
-  pure $ do
-    row ~ uiStyle $ do
-      heading "CodeWorld Tasks Demo"
-      space
-      hyper HoverMenu $ hoverMenu paths
-      space
-      nav $ do
-        anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
-        anchor "Repo" [uri|https://github.com/fmidue/codeworld-tasks|]
-    let submission = Submission {config, program}
-    hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow
 
 
 heading :: Text -> View a ()
