@@ -15,28 +15,17 @@
 module Main where
 
 
-import qualified Data.Text              as T
-import qualified Data.Text.IO           as T
-
-import Control.Monad                    (void)
-import Control.Monad.Except             (ExceptT, runExceptT, throwError)
-import Control.Monad.Writer             (WriterT, runWriterT, tell)
-import Data.List.Extra                  (sort, split)
 import Data.Maybe                       (listToMaybe)
 import Data.String                      (fromString)
-import Data.Text                        (Text, unpack)
-import Data.Tuple.Extra                 ((&&&))
-import Effectful                        (IOE, MonadIO, liftIO)
-import Haskell.Template.Task            (grade)
-import System.FilePath                  ((</>))
-import System.Directory                 (getTemporaryDirectory, listDirectory)
-import Text.PrettyPrint.Leijen.Text     (Doc)
+import Data.Text                        (Text)
+import Effectful                        (IOE)
 import Web.Hyperbole
 import Web.Hyperbole.HyperView.Forms    (Input)
 import Web.Atomic.CSS
 import Web.Atomic.CSS.Layout
 
 import CodeWorld.Demo.CssRules
+import CodeWorld.Demo.Server
 import CodeWorld.Demo.Style
 
 
@@ -54,21 +43,6 @@ data Feedback = Feedback
 data HoverMenu = HoverMenu
   deriving (Generic, ViewId)
 
-data Reject = Reject deriving Show
-type Output = ExceptT Reject (WriterT Doc IO)
-
-
-reject :: Doc -> Output a
-reject doc = tell doc >> throwError Reject
-
-
-evaluate :: Output a -> IO (Either Reject a, Doc)
-evaluate = runWriterT . runExceptT
-
-
-suggest :: Doc -> Output ()
-suggest = void . tell
-
 
 instance IOE :> es => HyperView Feedback es where
   data Action Feedback
@@ -82,20 +56,7 @@ instance IOE :> es => HyperView Feedback es where
 
   update Submit = do
     f <- formData @(Submission Identity)
-    (status, doc) <- liftIO $ do
-      tmp <- getTemporaryDirectory
-      grade
-        evaluate
-        reject
-        suggest
-        tmp
-        (unpack $ config f)
-        (unpack $ program f)
-    let feedback = show doc
-    let colors = case (status, feedback) of
-          (Left Reject, _) -> (FeedbackRejected,FeedbackRejectedText)
-          (_, [])          -> (FeedbackOkay, UIText)
-          _                -> (FeedbackSuggestion, FeedbackSuggestionText)
+    (colors, feedback) <- gradeSubmission (config f) (program f)
     pure $ tAreaForm f feedback colors
 
 
@@ -122,13 +83,13 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         heading "Config"
         filledTextarea $ config contents
       heading "Feedback"
-      el (fromString feedback) ~ feedbackStyle . bg bgColor . color textColor
+      el (fromString feedback) ~ feedbackStyle bgColor textColor
 
 
 hoverMenu :: [FilePath] -> View HoverMenu ()
 hoverMenu paths = do
   let parentClass = "dropdown-examples"
-  el ~ stack @ class_ parentClass $ do
+  el ~ hoverMenuStyle @ class_ parentClass $ do
     heading "Load Examples" ~ pointer
     ol ~ popupStyle parentClass (T 20) . uiStyle $
       mapM_ ((li ~ listStyle) . target Feedback . liftA2 button Load fromString) paths
@@ -148,7 +109,7 @@ page = do
     row ~ uiStyle $ do
       heading "CodeWorld Tasks Demo"
       space
-      hyper HoverMenu (hoverMenu paths) ~ minWidth (PxRem 5)
+      hyper HoverMenu $ hoverMenu paths
       space
       nav $ do
         anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
@@ -167,24 +128,3 @@ anchor = flip link ~ anchorStyle
 
 filledTextarea :: Text -> View (Input id a) ()
 filledTextarea contents = textarea (Just contents) ~ textAreaStyle @ value contents
-
-
-availableTasks :: MonadIO m => m [FilePath]
-availableTasks = liftIO $ sort <$> listDirectory examplesDirectory
-
-
-loadPreset :: MonadIO m => FilePath -> m (Text,Text)
-loadPreset = liftIO .
-  fmap (id &&& taskFromConfig) . T.readFile . (examplesDirectory </>)
-
-
-splitConfig :: Text -> [Text]
-splitConfig = map T.unlines . split ("---" `T.isPrefixOf`) . T.lines
-
-
-taskFromConfig :: Text -> Text
-taskFromConfig = (!! 1) . splitConfig
-
-
-examplesDirectory :: FilePath
-examplesDirectory = "templates"

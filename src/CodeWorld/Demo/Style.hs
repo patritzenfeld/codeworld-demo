@@ -4,6 +4,7 @@ module CodeWorld.Demo.Style (
   AppColor(..),
   anchorStyle,
   feedbackStyle,
+  hoverMenuStyle,
   listStyle,
   popupStyle,
   textAreaStyle,
@@ -48,8 +49,10 @@ textAreaStyle :: Styleable a => CSS a -> CSS a
 textAreaStyle = bg Editor . grow
 
 
-feedbackStyle :: Styleable a => CSS a -> CSS a
-feedbackStyle = grow . whiteSpace PreWrap . maxHeight (Pct 0.25) . verticalScroll
+feedbackStyle :: Styleable a => AppColor -> AppColor -> CSS a -> CSS a
+feedbackStyle bgColor textColor =
+  grow . whiteSpace PreWrap . maxHeight (Pct 0.25) .
+  verticalScroll . bg bgColor . color textColor
 
 
 uiStyle :: Styleable a => CSS a -> CSS a
@@ -66,3 +69,7 @@ popupStyle parent size = popup size . visibility Hidden . displayOnHover parent 
 
 listStyle :: Styleable a => CSS a -> CSS a
 listStyle = uiStyle ~ border 1
+
+
+hoverMenuStyle :: Styleable a => CSS a -> CSS a
+hoverMenuStyle = stack . minWidth (PxRem 5)
