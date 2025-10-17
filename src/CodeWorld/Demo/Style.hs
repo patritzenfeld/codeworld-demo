@@ -5,6 +5,7 @@ module CodeWorld.Demo.Style (
   anchorStyle,
   feedbackStyle,
   hoverMenuStyle,
+  mainSectionStyle,
   listStyle,
   popupStyle,
   textAreaStyle,
@@ -45,8 +46,12 @@ instance ToColor AppColor where
   colorValue FeedbackSuggestionText = "#000" -- black
 
 
+mainSectionStyle :: Styleable a => CSS a -> CSS a
+mainSectionStyle = grow . pad 10 . gap 10 ~ bg Background
+
+
 textAreaStyle :: Styleable a => CSS a -> CSS a
-textAreaStyle = bg Editor . grow
+textAreaStyle = grow . bg Editor
 
 
 feedbackStyle :: Styleable a => AppColor -> AppColor -> CSS a -> CSS a

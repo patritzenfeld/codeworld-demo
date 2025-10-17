@@ -72,7 +72,7 @@ instance HyperView HoverMenu es where
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
 tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
   let f = fieldNames @Submission
-  row ~ grow . pad 10 . gap 10 ~ bg Background $ do
+  row ~ mainSectionStyle $ do
     col ~ grow $ do
       field (program f) $ do
         heading "Code Input"
