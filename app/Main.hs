@@ -25,10 +25,10 @@ import CodeWorld.Demo.Style             (AppColor(..), uiStyle)
 import CodeWorld.Demo.View (
   Feedback(..),
   HoverMenu(..),
-  Submission(..),
   externalNav,
   heading,
   hoverMenu,
+  readConfig,
   tAreaForm,
   )
 
@@ -42,9 +42,10 @@ page :: (IOE :> es, Hyperbole :> es) => Page es '[HoverMenu, Feedback]
 page = do
   pageTitle "CodeWorld Tasks Demo"
   paths <- availableTasks
-  (config,program) <- case listToMaybe paths of
-    Nothing -> pure ("","")
+  confSegments <- case listToMaybe paths of
+    Nothing -> pure ["","",""]
     Just path -> loadPreset path
+  submission <- readConfig confSegments
   pure $ do
     row ~ uiStyle $ do
       heading "CodeWorld Tasks Demo"
@@ -52,5 +53,4 @@ page = do
       hyper HoverMenu $ hoverMenu paths
       space
       externalNav
-    let submission = Submission {config, program}
     hyper Feedback (tAreaForm submission "" (Editor, UIText)) ~ display Flex . grow

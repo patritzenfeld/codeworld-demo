@@ -19,9 +19,12 @@ module CodeWorld.Demo.View (
   externalNav,
   heading,
   hoverMenu,
+  readConfig,
   tAreaForm,
 ) where
 
+
+import qualified Data.Text               as T
 
 import Data.String                      (fromString)
 import Data.Text                        (Text)
@@ -31,6 +34,7 @@ import Web.Hyperbole
 import Web.Atomic.CSS (
   (~),
   pointer,
+  fontSize,
   grow,
   bold,
   Length(Pct),
@@ -55,11 +59,12 @@ import CodeWorld.Demo.Style (
 
 
 data Submission f = Submission
-  { config :: Field f Text
+  { settings :: Field f Text
+  , template :: Field f Text
+  , tests :: Field f Text
   , program :: Field f Text
   }
   deriving (Generic, FromFormF, GenFields FieldName, GenFields Validated)
-
 
 
 data Feedback = Feedback
@@ -72,13 +77,14 @@ instance IOE :> es => HyperView Feedback es where
     | Load FilePath
     deriving (Generic, ViewAction)
   update (Load path) = do
-    (config,program) <- loadPreset path
-    let submission = Submission {config, program}
+    confSegments <- loadPreset path
+    submission <- readConfig confSegments
     pure $ tAreaForm submission "" (Editor, UIText)
 
   update Submit = do
     f <- formData @(Submission Identity)
-    (colors, feedback) <- gradeSubmission (config f) (program f)
+    let config = T.intercalate "---\n" [settings f, template f, tests f]
+    (colors, feedback) <- gradeSubmission config (program f)
     pure $ tAreaForm f feedback colors
 
 
@@ -115,9 +121,13 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         filledTextarea (program contents) ~ noResize
       submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
-      field (config f) $ do
-        heading "Config"
-        filledTextarea $ config contents
+      heading "Config"
+      field (settings f) $ do
+        filledTextarea $ settings contents
+      field (template f) $ do
+        filledTextarea $ template contents
+      field (tests f) $ do
+        filledTextarea $ tests contents
       heading "Feedback"
       el (fromString feedback) ~ feedbackStyle bgColor textColor
 
@@ -135,5 +145,22 @@ heading :: Text -> View a ()
 heading = (el ~ bold) . text
 
 
+h1 :: View a () -> View a ()
+h1 = tag "h1" ~ fontSize 50 ~ bold
+
+
+p :: View a () -> View a ()
+p = tag "p"
+
+
 filledTextarea :: Text -> View (Input id a) ()
 filledTextarea contents = textarea (Just contents) ~ textAreaStyle @ value contents
+
+
+readConfig :: Hyperbole :> es => [Text] -> Eff es (Submission Identity)
+readConfig segments = case segments of
+  [settings, template, tests] -> do
+    pure Submission {settings, template, tests, program = template}
+  _ -> respondErrorView "Error: Example template could not be read" $ do
+    h1 "Internal Error"
+    p "Example template could not be read. Please contact the maintainer!"

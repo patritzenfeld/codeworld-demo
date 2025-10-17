@@ -15,7 +15,6 @@ import Control.Monad.Except             (ExceptT, runExceptT, throwError)
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
 import Data.List.Extra                  (sort, split)
 import Data.Text                        (Text, unpack)
-import Data.Tuple.Extra                 ((&&&))
 import Effectful                        (MonadIO, liftIO)
 import Haskell.Template.Task            (grade)
 import Text.PrettyPrint.Leijen.Text     (Doc)
@@ -45,17 +44,13 @@ availableTasks :: MonadIO m => m [FilePath]
 availableTasks = liftIO $ sort <$> listDirectory examplesDirectory
 
 
-loadPreset :: MonadIO m => FilePath -> m (Text,Text)
+loadPreset :: MonadIO m => FilePath -> m [Text]
 loadPreset = liftIO .
-  fmap (id &&& taskFromConfig) . T.readFile . (examplesDirectory </>)
+  fmap splitConfig . T.readFile . (examplesDirectory </>)
 
 
 splitConfig :: Text -> [Text]
 splitConfig = map T.unlines . split ("---" `T.isPrefixOf`) . T.lines
-
-
-taskFromConfig :: Text -> Text
-taskFromConfig = (!! 1) . splitConfig
 
 
 examplesDirectory :: FilePath
