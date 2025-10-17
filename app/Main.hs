@@ -65,11 +65,11 @@ instance IOE :> es => HyperView Feedback es where
 
 instance HyperView HoverMenu es where
   data Action HoverMenu
-    = TriggerLoad
+    = None
     deriving (Generic, ViewAction)
   type Require HoverMenu = '[Feedback]
-  -- never called. This has to be doable without a HyperView instance???
-  update TriggerLoad = undefined
+  -- Never called. Found the same kind of pattern in the library.
+  update _ = pure none
 
 
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
