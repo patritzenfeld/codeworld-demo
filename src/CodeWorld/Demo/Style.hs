@@ -6,14 +6,14 @@ module CodeWorld.Demo.Style (
   buttonStyle,
   feedbackStyle,
   hoverMenuStyle,
-  mainSectionStyle,
   listStyle,
+  mainSectionStyle,
+  menuButtonStyle,
+  navbarStyle,
   popupStyle,
   submitStyle,
   textAreaStyle,
   uiStyle,
-  -- re-exported
-  noResize,
 ) where
 
 
@@ -44,7 +44,7 @@ instance ToColor AppColor where
   colorValue Editor = "#FFF" -- white
   colorValue Background = "#D3D3D3" -- light gray
   colorValue UIElem = "#800000" -- darker red
-  colorValue UIElemHover = "#FF8A00"
+  colorValue UIElemHover = "#FF8A00" -- orange
   colorValue FeedbackOkay = "#008000" -- green
   colorValue FeedbackRejected = "#842b26" -- dark red
   colorValue FeedbackRejectedText = "#FFF" -- white
@@ -57,7 +57,7 @@ mainSectionStyle = grow . pad 10 . gap 10 ~ bg Background
 
 
 textAreaStyle :: Styleable a => CSS a -> CSS a
-textAreaStyle = grow . bg Editor
+textAreaStyle = grow . bg Editor . noResize
 
 
 feedbackStyle :: Styleable a => AppColor -> AppColor -> CSS a -> CSS a
@@ -66,16 +66,16 @@ feedbackStyle bgColor textColor =
   verticalScroll . bg bgColor . color textColor
 
 
-uiStyle :: Styleable a => CSS a -> CSS a
-uiStyle = uiShare . pad 10
-
-
 submitStyle :: Styleable a => CSS a -> CSS a
-submitStyle = uiStyle . clickable
+submitStyle = uiClickable . pad 10
 
 
 uiClickable :: Styleable a => CSS a -> CSS a
-uiClickable = uiShare . clickable
+uiClickable = uiStyle . clickable
+
+
+navbarStyle :: Styleable a => CSS a -> CSS a
+navbarStyle = pad 10
 
 
 anchorStyle :: Styleable a => CSS a -> CSS a
@@ -87,7 +87,11 @@ popupStyle parent size = popup size . visibility Hidden . displayOnHover parent 
 
 
 listStyle :: Styleable a => CSS a -> CSS a
-listStyle = uiClickable . border 1 . pad 10
+listStyle = pad 10 ~ uiClickable . width (Pct 1) . border 1
+
+
+menuButtonStyle :: Styleable a => CSS a -> CSS a
+menuButtonStyle = pointer . clickable . pad 10
 
 
 hoverMenuStyle :: Styleable a => CSS a -> CSS a
@@ -95,11 +99,11 @@ hoverMenuStyle = stack . minWidth (PxRem 5)
 
 
 buttonStyle :: Styleable a => CSS a -> CSS a
-buttonStyle = uiClickable . border (X 1) . pad (X 5)
+buttonStyle = uiClickable . pad (X 5)
 
 
-uiShare :: Styleable a => CSS a -> CSS a
-uiShare = bg UIElem . color UIText . bold . textAlign AlignCenter
+uiStyle :: Styleable a => CSS a -> CSS a
+uiStyle = bg UIElem . color UIText . bold . textAlign AlignCenter
 
 
 clickable :: Styleable a => CSS a -> CSS a

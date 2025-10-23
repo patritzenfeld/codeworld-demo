@@ -16,9 +16,7 @@ module CodeWorld.Demo.View (
   Feedback(..),
   Submission(..),
   VisibleSection(..),
-  externalNav,
-  heading,
-  hoverMenu,
+  header,
   readConfig,
   tAreaForm,
 ) where
@@ -34,8 +32,9 @@ import Web.Hyperbole.HyperView.Forms    (Input)
 import Web.Hyperbole
 import Web.Atomic.CSS (
   (~),
-  pointer,
   fontSize,
+  gap,
+  pad,
   grow,
   bold,
   stack,
@@ -49,9 +48,9 @@ import Web.Atomic.CSS.Layout            (maxWidth)
 
 import CodeWorld.Demo.Server            (loadPreset, gradeSubmission)
 import CodeWorld.Demo.Style (
-  noResize,
   AppColor(..),
   mainSectionStyle,
+  navbarStyle,
   textAreaStyle,
   feedbackStyle,
   uiStyle,
@@ -61,6 +60,7 @@ import CodeWorld.Demo.Style (
   hoverMenuStyle,
   buttonStyle,
   submitStyle,
+  menuButtonStyle,
   )
 
 
@@ -105,7 +105,7 @@ instance IOE :> es => HyperView Feedback es where
 
 
 externalNav :: View a ()
-externalNav = nav $ do
+externalNav = nav ~ navbarStyle $ do
   anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
   anchor "Repo" [uri|https://github.com/fmidue/codeworld-tasks|]
 
@@ -117,6 +117,15 @@ anchor = flip (link @ newPage . noReferrer ~ anchorStyle)
     noReferrer = att "rel" "noopener noreferrer"
 
 
+header :: [FilePath] -> View (Root '[Feedback]) ()
+header paths = row ~ uiStyle $ do
+  heading "CodeWorld Tasks Demo" ~ pad 10
+  space
+  hoverMenu paths
+  space
+  externalNav
+
+
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> VisibleSection -> View Feedback ()
 tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ do
   let f = fieldNames @Submission
@@ -124,10 +133,10 @@ tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ 
     col ~ grow $ do
       field (program f) $ do
         heading "Code Input"
-        filledTextarea (program contents) ~ noResize
+        filledTextarea (program contents)
       submit "Submit" ~ submitStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
-      row $ do
+      row ~ gap 10 $ do
         heading "Config"
         space
         jsButton "showSettings()" "Edit Settings" ~ buttonStyle
@@ -154,9 +163,9 @@ hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()
 hoverMenu paths = do
   let parentClass = "dropdown-examples"
   el ~ hoverMenuStyle @ class_ parentClass $ do
-    heading "Load Examples" ~ pointer
-    ol ~ popupStyle parentClass (T 20) . uiStyle $
-      mapM_ ((li ~ listStyle) . target Feedback . liftA2 button Load fromString) paths
+    heading "Load Examples" ~ menuButtonStyle
+    ol ~ popupStyle parentClass (T 28) . uiStyle $
+      mapM_ (li . target Feedback . liftA2 (button ~ listStyle) Load fromString) paths
 
 
 heading :: Text -> View a ()
