@@ -20,9 +20,9 @@ function showTests() {
 }
 
 function setParam(param) {
-  if ('URLSearchParams' in window) {
+  if ("URLSearchParams" in window) {
     const url = new URL(window.location)
     url.searchParams.set("visible", param)
-    history.pushState(null, '', url);
+    history.pushState(null, "", url);
   }
 }

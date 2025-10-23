@@ -6,7 +6,9 @@ IOE
 Leijen
 lhs
 libz
+onclick
 rhs
 Styleable
 Uniplate
+Wai
 WORKDIR

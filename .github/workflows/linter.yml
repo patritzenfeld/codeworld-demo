@@ -35,6 +35,7 @@ jobs:
           VALIDATE_BIOME_LINT: false
           VALIDATE_YAML_PRETTIER: false
           VALIDATE_MARKDOWN_PRETTIER: false
+          VALIDATE_JAVASCRIPT_ES: false
           VALIDATE_TRIVY: false
           VALIDATE_JSCPD: false
           GITHUB_ACTIONS_COMMAND_ARGS: -shellcheck=
