@@ -101,6 +101,7 @@ instance IOE :> es => HyperView Feedback es where
     vis <- fromMaybe Tests <$> lookupParam "visible"
     pure $ tAreaForm f feedback colors vis
 
+
 externalNav :: View a ()
 externalNav = nav $ do
   anchor "Docs" [uri|https://fmidue.github.io/codeworld-tasks/|]
