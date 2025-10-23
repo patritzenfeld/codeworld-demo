@@ -15,6 +15,7 @@
 module CodeWorld.Demo.View (
   Feedback(..),
   Submission(..),
+  VisibleSection(..),
   externalNav,
   heading,
   hoverMenu,
@@ -25,6 +26,7 @@ module CodeWorld.Demo.View (
 
 import qualified Data.Text               as T
 
+import Data.Maybe                       (fromMaybe)
 import Data.String                      (fromString)
 import Data.Text                        (Text)
 import Effectful                        (IOE)
@@ -36,9 +38,13 @@ import Web.Atomic.CSS (
   fontSize,
   grow,
   bold,
+  stack,
+  visibility,
   Length(Pct),
   Sides(T),
+  Visibility(..),
   )
+import Web.Atomic.Attributes            (Attributable, Attributes)
 import Web.Atomic.CSS.Layout            (maxWidth)
 
 import CodeWorld.Demo.Server            (loadPreset, gradeSubmission)
@@ -55,6 +61,13 @@ import CodeWorld.Demo.Style (
   hoverMenuStyle,
   )
 
+
+
+data VisibleSection
+  = Settings
+  | Template
+  | Tests
+  deriving (Generic, FromParam, ToParam)
 
 
 data Submission f = Submission
@@ -78,13 +91,15 @@ instance IOE :> es => HyperView Feedback es where
   update (Load path) = do
     confSegments <- loadPreset path
     submission <- readConfig confSegments
-    pure $ tAreaForm submission "" (Editor, UIText)
+    vis <- fromMaybe Tests <$> lookupParam "visible"
+    pure $ tAreaForm submission "" (Editor, UIText) vis
 
   update Submit = do
     f <- formData @(Submission Identity)
     let config = T.intercalate "---\n" [settings f, template f, tests f]
     (colors, feedback) <- gradeSubmission config (program f)
-    pure $ tAreaForm f feedback colors
+    vis <- fromMaybe Tests <$> lookupParam "visible"
+    pure $ tAreaForm f feedback colors vis
 
 
 externalNav :: View a ()
@@ -97,8 +112,8 @@ anchor :: View c () -> URI -> View c ()
 anchor = flip link ~ anchorStyle
 
 
-tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> View Feedback ()
-tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
+tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> VisibleSection -> View Feedback ()
+tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ do
   let f = fieldNames @Submission
   row ~ mainSectionStyle $ do
     col ~ grow $ do
@@ -107,15 +122,26 @@ tAreaForm contents feedback (bgColor, textColor) = form Submit ~ grow $ do
         filledTextarea (program contents) ~ noResize
       submit "Submit" ~ uiStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
-      heading "Config"
-      field (settings f) $ do
-        filledTextarea $ settings contents
-      field (template f) $ do
-        filledTextarea $ template contents
-      field (tests f) $ do
-        filledTextarea $ tests contents
+      row $ do
+        heading "Config"
+        jsButton "showSettings()" "Edit Settings"
+        jsButton "showTemplate()" "Edit Task Template"
+        jsButton "showTests()" "Edit Tests"
+      el ~ stack . grow $ do
+        field (settings f) $ do
+          filledTextarea ~ visSettings @ idAttr "settingsArea" $ settings contents
+        field (template f) $ do
+          filledTextarea ~ visTemplate @ idAttr "templateArea"$ template contents
+        field (tests f) $ do
+          filledTextarea ~ visTests @ idAttr "testArea" $ tests contents
       heading "Feedback"
       el (fromString feedback) ~ feedbackStyle bgColor textColor
+  where
+    (visSettings, visTemplate, visTests) = all3 visibility $ case visible of
+      Settings -> (Visible, Hidden, Hidden)
+      Template -> (Hidden, Visible, Hidden)
+      Tests -> (Hidden, Hidden, Visible)
+    all3 f (a,b,c) = (f a, f b, f c)
 
 
 hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()
@@ -131,12 +157,12 @@ heading :: Text -> View a ()
 heading = (el ~ bold) . text
 
 
-h1 :: View a () -> View a ()
-h1 = tag "h1" ~ fontSize 50 ~ bold
+idAttr :: Attributable h => AttValue -> Attributes h -> Attributes h
+idAttr = att "id"
 
 
-p :: View a () -> View a ()
-p = tag "p"
+jsButton :: Text -> View c () -> View c ()
+jsButton event = (tag @ type_ "button" . att "onclick" event) "button"
 
 
 filledTextarea :: Text -> View (Input id a) ()
@@ -150,3 +176,6 @@ readConfig segments = case segments of
   _ -> respondErrorView "Error: Example template could not be read" $ do
     h1 "Internal Error"
     p "Example template could not be read. Please contact the maintainer!"
+  where
+    h1 = tag "h1" ~ fontSize 50 ~ bold
+    p = tag "p"

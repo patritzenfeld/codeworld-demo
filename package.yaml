@@ -10,6 +10,7 @@ copyright: "2025 Patrick Ritzenfeld"
 extra-source-files:
   - README.md
   - CHANGELOG.md
+  - static/*
 
 description: Please see the README on GitHub at <https://github.com/patritzenfeld/codeworld-demo#readme>
 
@@ -25,6 +26,7 @@ dependencies:
   - hyperbole
   - atomic-css
   - mtl
+  - wai-middleware-static
   - text
 
 ghc-options:
