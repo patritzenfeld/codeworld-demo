@@ -123,23 +123,24 @@ tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ 
     col ~ grow . maxWidth (Pct 0.43) $ do
       row $ do
         heading "Config"
-        jsButton "Edit Settings" @ att "onclick" "showSettings()"
-        jsButton "Edit Task Template" @ att "onclick" "showTemplate()"
-        jsButton "Edit Tests" @ att "onclick" "showTests()"
+        jsButton "showSettings()" "Edit Settings"
+        jsButton "showTemplate()" "Edit Task Template"
+        jsButton "showTests()" "Edit Tests"
       el ~ stack . grow $ do
         field (settings f) $ do
-          filledTextarea ~ visibility visSettings @ idAttr "settingsArea" $ settings contents
+          filledTextarea ~ visSettings @ idAttr "settingsArea" $ settings contents
         field (template f) $ do
-          filledTextarea ~ visibility visTemplate @ idAttr "templateArea"$ template contents
+          filledTextarea ~ visTemplate @ idAttr "templateArea"$ template contents
         field (tests f) $ do
-          filledTextarea ~ visibility visTests @ idAttr "testArea" $ tests contents
+          filledTextarea ~ visTests @ idAttr "testArea" $ tests contents
       heading "Feedback"
       el (fromString feedback) ~ feedbackStyle bgColor textColor
   where
-    (visSettings, visTemplate, visTests) = case visible of
+    (visSettings, visTemplate, visTests) = all3 visibility $ case visible of
       Settings -> (Visible, Hidden, Hidden)
       Template -> (Hidden, Visible, Hidden)
       Tests -> (Hidden, Hidden, Visible)
+    all3 f (a,b,c) = (f a, f b, f c)
 
 
 hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()
@@ -155,20 +156,12 @@ heading :: Text -> View a ()
 heading = (el ~ bold) . text
 
 
-h1 :: View a () -> View a ()
-h1 = tag "h1" ~ fontSize 50 ~ bold
-
-
-p :: View a () -> View a ()
-p = tag "p"
-
-
 idAttr :: Attributable h => AttValue -> Attributes h -> Attributes h
 idAttr = att "id"
 
 
-jsButton :: View c () -> View c ()
-jsButton = (tag @ type_ "button") "button"
+jsButton :: Text -> View c () -> View c ()
+jsButton event = (tag @ type_ "button" . att "onclick" event) "button"
 
 
 filledTextarea :: Text -> View (Input id a) ()
@@ -182,3 +175,6 @@ readConfig segments = case segments of
   _ -> respondErrorView "Error: Example template could not be read" $ do
     h1 "Internal Error"
     p "Example template could not be read. Please contact the maintainer!"
+  where
+    h1 = tag "h1" ~ fontSize 50 ~ bold
+    p = tag "p"
