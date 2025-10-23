@@ -59,6 +59,8 @@ import CodeWorld.Demo.Style (
   popupStyle,
   listStyle,
   hoverMenuStyle,
+  buttonStyle,
+  submitStyle,
   )
 
 
@@ -109,7 +111,10 @@ externalNav = nav $ do
 
 
 anchor :: View c () -> URI -> View c ()
-anchor = flip link ~ anchorStyle
+anchor = flip (link @ newPage . noReferrer ~ anchorStyle)
+  where
+    newPage = att "target" "_blank"
+    noReferrer = att "rel" "noopener noreferrer"
 
 
 tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> VisibleSection -> View Feedback ()
@@ -120,13 +125,14 @@ tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ 
       field (program f) $ do
         heading "Code Input"
         filledTextarea (program contents) ~ noResize
-      submit "Submit" ~ uiStyle
+      submit "Submit" ~ submitStyle
     col ~ grow . maxWidth (Pct 0.43) $ do
       row $ do
         heading "Config"
-        jsButton "showSettings()" "Edit Settings"
-        jsButton "showTemplate()" "Edit Task Template"
-        jsButton "showTests()" "Edit Tests"
+        space
+        jsButton "showSettings()" "Edit Settings" ~ buttonStyle
+        jsButton "showTemplate()" "Edit Task Template" ~ buttonStyle
+        jsButton "showTests()" "Edit Tests" ~ buttonStyle
       el ~ stack . grow $ do
         field (settings f) $ do
           filledTextarea ~ visSettings @ idAttr "settingsArea" $ settings contents
