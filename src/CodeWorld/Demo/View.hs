@@ -13,9 +13,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module CodeWorld.Demo.View (
-  ConfigPart(..),
   Feedback(..),
   Submission(..),
+  VisibleSection(..),
   externalNav,
   heading,
   hoverMenu,
@@ -26,6 +26,7 @@ module CodeWorld.Demo.View (
 
 import qualified Data.Text               as T
 
+import Data.Maybe                       (fromMaybe)
 import Data.String                      (fromString)
 import Data.Text                        (Text)
 import Effectful                        (IOE)
@@ -43,6 +44,7 @@ import Web.Atomic.CSS (
   Sides(T),
   Visibility(..),
   )
+import Web.Atomic.Attributes            (Attributable, Attributes)
 import Web.Atomic.CSS.Layout            (maxWidth)
 
 import CodeWorld.Demo.Server            (loadPreset, gradeSubmission)
@@ -61,6 +63,13 @@ import CodeWorld.Demo.Style (
 
 
 
+data VisibleSection
+  = Settings
+  | Template
+  | Tests
+  deriving (Generic, FromParam, ToParam)
+
+
 data Submission f = Submission
   { settings :: Field f Text
   , template :: Field f Text
@@ -73,30 +82,24 @@ data Submission f = Submission
 data Feedback = Feedback
   deriving (Generic, ViewId)
 
-data ConfigPart = Settings | Template | Tests
-  deriving (Generic, ToParam, FromParam)
-
 
 instance IOE :> es => HyperView Feedback es where
   data Action Feedback
     = Submit
     | Load FilePath
-    | Open ConfigPart
     deriving (Generic, ViewAction)
   update (Load path) = do
     confSegments <- loadPreset path
     submission <- readConfig confSegments
-    pure $ tAreaForm submission "" (Editor, UIText) Tests
+    vis <- fromMaybe Tests <$> lookupParam "visible"
+    pure $ tAreaForm submission "" (Editor, UIText) vis
 
   update Submit = do
     f <- formData @(Submission Identity)
     let config = T.intercalate "---\n" [settings f, template f, tests f]
     (colors, feedback) <- gradeSubmission config (program f)
-    pure $ tAreaForm f feedback colors Tests
-
-  update (Open cp) = do
-    f <- formData @(Submission Identity)
-    pure $ tAreaForm f "" (Editor, UIText) cp
+    vis <- fromMaybe Tests <$> lookupParam "visible"
+    pure $ tAreaForm f feedback colors vis
 
 externalNav :: View a ()
 externalNav = nav $ do
@@ -108,8 +111,8 @@ anchor :: View c () -> URI -> View c ()
 anchor = flip link ~ anchorStyle
 
 
-tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> ConfigPart -> View Feedback ()
-tAreaForm contents feedback (bgColor, textColor) focus = form Submit ~ grow $ do
+tAreaForm :: Submission Identity -> String -> (AppColor,AppColor) -> VisibleSection -> View Feedback ()
+tAreaForm contents feedback (bgColor, textColor) visible = form Submit ~ grow $ do
   let f = fieldNames @Submission
   row ~ mainSectionStyle $ do
     col ~ grow $ do
@@ -120,26 +123,23 @@ tAreaForm contents feedback (bgColor, textColor) focus = form Submit ~ grow $ do
     col ~ grow . maxWidth (Pct 0.43) $ do
       row $ do
         heading "Config"
-        addContext Feedback $ do
-          button (Open Settings) "Edit Settings" @ type_ "submit"
-          button (Open Template) "Edit Task Template" @ type_ "submit"
-          button (Open Tests) "Edit Tests" @ type_ "submit"
+        jsButton "Edit Settings" @ att "onclick" "showSettings()"
+        jsButton "Edit Task Template" @ att "onclick" "showTemplate()"
+        jsButton "Edit Tests" @ att "onclick" "showTests()"
       el ~ stack . grow $ do
         field (settings f) $ do
-          filledTextarea ~ a $ settings contents
+          filledTextarea ~ visibility visSettings @ idAttr "settingsArea" $ settings contents
         field (template f) $ do
-          filledTextarea ~ b $ template contents
+          filledTextarea ~ visibility visTemplate @ idAttr "templateArea"$ template contents
         field (tests f) $ do
-          filledTextarea ~ c $ tests contents
+          filledTextarea ~ visibility visTests @ idAttr "testArea" $ tests contents
       heading "Feedback"
       el (fromString feedback) ~ feedbackStyle bgColor textColor
   where
-    vis = visibility Visible
-    hidden = visibility Hidden
-    (a,b,c) = case focus of
-      Settings -> (vis,hidden,hidden)
-      Template -> (hidden,vis,hidden)
-      Tests    -> (hidden,hidden,vis)
+    (visSettings, visTemplate, visTests) = case visible of
+      Settings -> (Visible, Hidden, Hidden)
+      Template -> (Hidden, Visible, Hidden)
+      Tests -> (Hidden, Hidden, Visible)
 
 
 hoverMenu :: [FilePath] -> View (Root '[Feedback]) ()
@@ -161,6 +161,14 @@ h1 = tag "h1" ~ fontSize 50 ~ bold
 
 p :: View a () -> View a ()
 p = tag "p"
+
+
+idAttr :: Attributable h => AttValue -> Attributes h -> Attributes h
+idAttr = att "id"
+
+
+jsButton :: View c () -> View c ()
+jsButton = (tag @ type_ "button") "button"
 
 
 filledTextarea :: Text -> View (Input id a) ()
