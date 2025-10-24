@@ -6,6 +6,8 @@ IOE
 Leijen
 lhs
 libz
+noopener
+noreferrer
 onclick
 rhs
 Styleable
