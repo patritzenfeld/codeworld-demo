@@ -20,17 +20,15 @@ import CodeWorld.Demo.Server (
   availableTasks,
   loadPreset,
   )
-import CodeWorld.Demo.Style             (AppColor(..), uiStyle)
+import CodeWorld.Demo.Style             (AppColor(..))
 import CodeWorld.Demo.View (
   Feedback(..),
   VisibleSection(..),
-  externalNav,
-  heading,
-  hoverMenu,
+  header,
   readConfig,
   tAreaForm,
   )
-import Network.Wai.Middleware.Static (staticPolicy, addBase)
+import Network.Wai.Middleware.Static    (staticPolicy, addBase)
 
 
 main :: IO ()
@@ -49,10 +47,5 @@ page = do
   submission <- readConfig confSegments
   pure $ do
     script "buttons.js"
-    row ~ uiStyle $ do
-      heading "CodeWorld Tasks Demo"
-      space
-      hoverMenu paths
-      space
-      externalNav
+    header paths
     hyper Feedback (tAreaForm submission "" (Editor, UIText) configSection) ~ display Flex . grow
