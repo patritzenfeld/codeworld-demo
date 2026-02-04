@@ -8,19 +8,17 @@ extra-deps:
   - QuickCheck-2.15.0.1
   - hyperbole-0.5.0
   - atomic-css-0.2.0
-  - git: https://github.com/fmidue/IOTasks
-    commit: e3b6b741ddb731b263e2d29713fdad027478c08c
   - git: https://github.com/fmidue/codeworld-tasks
     commit: 67bc363e81485a14a1aa624b8dd1d47a067d7bf0
-  - git: https://github.com/IagoAbal/haskell-z3
-    commit: b77a17e5eeb7db82656bcbcd66c6e952207e69ca
-  - git: https://github.com/owestphal/type-match
-    commit: e1afab43d2e8bfa5e2006492ed34060036e7be51
   - git: https://github.com/fmidue/haskell-template-task
-    commit: 81278a30d63449879c39f403a2cad108ab0785ec
+    commit: 6c2956b1a34ea5bffc78f13cdaf5294a9d435fbd
     subdirs:
       - .
       - raw
+
+flags:
+  haskell-template-task-raw:
+    iotasks: false
 
 ghc-options:
   codeworld-tasks: -Wno-deriving-typeable

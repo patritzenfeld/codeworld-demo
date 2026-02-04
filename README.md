@@ -20,7 +20,6 @@ It may also take up to a minute to load the page initially, due to forced shutdo
 ### With Stack (Unix only)
 
 1. Install [Haskell Stack](https://docs.haskellstack.org/en/stable/#__tabbed_2_1)
-1. Install the z3 theorem prover (`sudo apt-get install libz3-dev` or similar)
 1. run `stack run` in the root directory of this repository.
 
 All necessary packages are installed in a sandboxed environment.
