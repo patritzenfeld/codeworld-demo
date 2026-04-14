@@ -63,8 +63,7 @@ executable codeworld-demo-exe
       app
   ghc-options: -Wall -Wcompat -Werror -Widentities -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      IOTasks
-    , atomic-css
+      atomic-css
     , base >=4.7 && <5
     , codeworld-demo
     , codeworld-tasks
