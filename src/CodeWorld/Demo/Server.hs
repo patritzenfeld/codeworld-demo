@@ -32,8 +32,8 @@ reject :: Doc -> Output a
 reject doc = tell doc >> throwError Reject
 
 
-evaluate :: Output a -> IO (Either Reject a, Doc)
-evaluate = runWriterT . runExceptT
+evaluate :: Output a -> Output a
+evaluate = id
 
 
 suggest :: Doc -> Output ()
@@ -60,7 +60,8 @@ examplesDirectory = "templates"
 gradeSubmission :: MonadIO m => Text -> Text -> m ((AppColor,AppColor), String)
 gradeSubmission config program = liftIO $ do
   tmp <- getTemporaryDirectory
-  (status, doc) <- grade
+  (status, doc) <- runWriterT $ runExceptT $ grade
+    evaluate
     evaluate
     reject
     suggest
