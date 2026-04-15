@@ -14,13 +14,15 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
-    curl=8.5.0-2ubuntu10.6 locales=2.39-0ubuntu8.6 libz3-dev=4.8.12-3.1build1 && \
+    curl=8.5.0-2ubuntu10.8 locales=2.39-0ubuntu8.7 libz3-dev=4.8.12-3.1build1 libpcre3-dev=2:8.39-15build1 &&\
     locale-gen en_US.UTF-8 && \
     curl -sSL https://get.haskellstack.org/ | sh && \
     rm -rf /var/lib/apt/lists/*
 USER user
 
-RUN stack build --no-terminal > /tmp/stack_deps.log
+RUN stack build --no-terminal --dependencies-only
+
+RUN stack build --no-terminal
 
 # define the port number the container should expose
 EXPOSE 3000
