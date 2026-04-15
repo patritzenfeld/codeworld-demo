@@ -5,6 +5,7 @@ HEALTHCHECK
 IOE
 Leijen
 lhs
+libpcre
 libz
 noopener
 noreferrer
