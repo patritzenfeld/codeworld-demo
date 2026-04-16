@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 USER user
 
 # build dependencies
-COPY --chown=user stack.yaml package.yaml codeworld-demo.cabal .
+COPY --chown=user stack.yaml package.yaml codeworld-demo.cabal ./
 RUN stack build --no-terminal --dependencies-only
 
 # build app
