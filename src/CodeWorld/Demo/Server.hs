@@ -83,9 +83,10 @@ gradeSubmission config program = liftIO $ do
     (unpack config)
     (unpack program)
   let (colors,feedback) = case (status,show doc) of
-        (Left reason, output) -> ( (FeedbackRejected, FeedbackRejectedText)
-                                 , concat ["Rejected for ", map toLower $ show reason, ":\n\n", output]
-                                 )
+        (Left reason, output) ->
+          ( (FeedbackRejected, FeedbackRejectedText)
+          , concat ["Rejected for ", map toLower $ show reason, ":\n\n", output]
+          )
         (Right (), "")        -> ((FeedbackOkay, UIText), "Okay")
         (Right (), output)    -> ((FeedbackSuggestion, FeedbackSuggestionText), output)
   pure (colors, feedback)
