@@ -87,6 +87,6 @@ gradeSubmission config program = liftIO $ do
           ( (FeedbackRejected, FeedbackRejectedText)
           , concat ["Rejected for ", map toLower $ show reason, ":\n\n", output]
           )
-        (Right (), "")        -> ((FeedbackOkay, UIText), "Okay")
-        (Right (), output)    -> ((FeedbackSuggestion, FeedbackSuggestionText), output)
+        (Right _, "")        -> ((FeedbackOkay, UIText), "Okay")
+        (Right _, output)    -> ((FeedbackSuggestion, FeedbackSuggestionText), output)
   pure (colors, feedback)
