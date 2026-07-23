@@ -11,8 +11,14 @@ import qualified Data.Text              as T
 import qualified Data.Text.IO           as T
 
 import Control.Monad                    (void)
-import Control.Monad.Except             (ExceptT, runExceptT, throwError)
+import Control.Monad.Except (
+  ExceptT,
+  runExceptT,
+  throwError,
+  withExceptT,
+  )
 import Control.Monad.Writer             (WriterT, runWriterT, tell)
+import Data.Char                        (toLower)
 import Data.List.Extra                  (sort, split)
 import Data.Text                        (Text, unpack)
 import Effectful                        (MonadIO, liftIO)
@@ -24,16 +30,24 @@ import System.FilePath                  ((</>))
 import CodeWorld.Demo.Style             (AppColor(..))
 
 
-data Reject = Reject deriving Show
+data Reject = Unknown | Syntax | Semantics deriving Show
 type Output = ExceptT Reject (WriterT Doc IO)
 
 
 reject :: Doc -> Output a
-reject doc = tell doc >> throwError Reject
+reject doc = tell doc >> throwError Unknown
 
 
-evaluate :: Output a -> Output a
-evaluate = id
+evaluateSyntax :: Output a -> Output a
+evaluateSyntax = replaceReason Syntax
+
+
+evaluateSemantics :: Output a -> Output a
+evaluateSemantics = replaceReason Semantics
+
+
+replaceReason :: Reject -> Output a -> Output a
+replaceReason = withExceptT . const
 
 
 suggest :: Doc -> Output ()
@@ -61,16 +75,18 @@ gradeSubmission :: MonadIO m => Text -> Text -> m ((AppColor,AppColor), String)
 gradeSubmission config program = liftIO $ do
   tmp <- getTemporaryDirectory
   (status, doc) <- runWriterT $ runExceptT $ grade
-    evaluate
-    evaluate
+    evaluateSyntax
+    evaluateSemantics
     reject
     suggest
     tmp
     (unpack config)
     (unpack program)
-  let feedback = show doc
-  let colors = case (status, feedback) of
-        (Left Reject, _) -> (FeedbackRejected,FeedbackRejectedText)
-        (_, [])          -> (FeedbackOkay, UIText)
-        _                -> (FeedbackSuggestion, FeedbackSuggestionText)
+  let (colors,feedback) = case (status,show doc) of
+        (Left reason, output) ->
+          ( (FeedbackRejected, FeedbackRejectedText)
+          , concat ["Rejected for ", map toLower $ show reason, ":\n\n", output]
+          )
+        (Right (), "")        -> ((FeedbackOkay, UIText), "Okay")
+        (Right (), output)    -> ((FeedbackSuggestion, FeedbackSuggestionText), output)
   pure (colors, feedback)
