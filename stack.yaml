@@ -6,7 +6,7 @@ packages:
 
 extra-deps:
   - QuickCheck-2.15.0.1
-  - hyperbole-0.5.0
+  - hyperbole-0.7.1
   - atomic-css-0.2.0
   - git: https://github.com/fmidue/codeworld-tasks
     commit: 67bc363e81485a14a1aa624b8dd1d47a067d7bf0

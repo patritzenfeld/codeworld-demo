@@ -69,7 +69,7 @@ data VisibleSection
   = Settings
   | Template
   | Tests
-  deriving (Generic, FromParam, ToParam)
+  deriving (Generic, FromJSON, ToJSON)
 
 
 data Submission f = Submission
@@ -165,7 +165,7 @@ hoverMenu paths = do
   el ~ hoverMenuStyle @ class_ parentClass $ do
     heading "Load Examples" ~ menuButtonStyle
     ol ~ popupStyle parentClass (T 28) . uiStyle $
-      mapM_ (li . target Feedback . liftA2 (button ~ listStyle) Load fromString) paths
+      mapM_ (li . target Feedback () . liftA2 (button ~ listStyle) Load fromString) paths
 
 
 heading :: Text -> View a ()
