@@ -12,8 +12,12 @@ import Web.Hyperbole
 import Web.Atomic.CSS (
   (~),
   display,
+  flexCol,
   grow,
+  inset,
+  position,
   Display(Flex),
+  Position(Fixed),
   )
 
 import CodeWorld.Demo.Server (
@@ -45,7 +49,7 @@ page = do
     Nothing -> pure ["","",""]
     Just path -> loadPreset path
   submission <- readConfig confSegments
-  pure $ do
+  pure $ el ~ flexCol . position Fixed . inset 0 $ do
     script "buttons.js"
     header paths
     hyper Feedback (tAreaForm submission "" (Editor, UIText) configSection) ~ display Flex . grow
