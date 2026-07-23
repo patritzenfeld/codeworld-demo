@@ -276,29 +276,29 @@ module Test (test) where
 import qualified Task12
 import CodeWorld.Test
 import Data.List (nub)
-import Test.HUnit ((~:), (~?), Test(..), assertBool)
+import Test.HUnit ((~:), (~?), Test(..), assertBool, assertString)
 
 import TestHelper (isDefined, isDeeplyDefined)
 import qualified TestHarness as TH
-import qualified CodeWorld as CW
 
 test :: [ Test ]
 test =
   [ "scene =/= undefined?" ~: isDeeplyDefined Task12.scene
   , "aTile works on Integers?" ~: isDeeplyDefined (Task12.aTile (1 :: Integer))
   , "level is still Integer-typed?" ~: isDefined (Task12.level (0 :: Integer, 0 :: Integer) >= (0 :: Integer))
-  , map Task12.aTile [0,1,2,3,4] == [CW.blank, Task12.block, Task12.water, Task12.pearl, Task12.air] ~?
+  , map Task12.aTile [0,1,2,3,4] == [blank, Task12.block, Task12.water, Task12.pearl, Task12.air] ~?
     "aTile maps Integers to expected pictures? (make sure you handle being outside of the level correctly)"
   , TestCase $ TH.syntaxCheckWithExts ["LambdaCase","NoTemplateHaskell","TupleSections"] $ \m -> assertBool
       "scene uses predefined functions?"
       $ all (\name -> TH.contains (TH.ident name) $ TH.findTopLevelDeclsOf "scene" m) ["aTile", "level"]
-  , length (nub translations) == length translations ~? "Each tile is moved to a unique coordinate?"
-  , reduce Task12.scene ==
-    reduce (CW.pictures
-      [CW.translated (fromIntegral x) (fromIntegral y) $ Task12.aTile $ Task12.level (x,y)
-      | x <- [-10..10], y <- [-10..10]]) ~?
-    "scene draws the level correctly?"
+  , TestCase $ assertString $ testPicture Task12.scene $ do
+      complain "Each tile is moved to a unique coordinate?" $ do
+        translations <- findAllTranslatedThen (`contains` someSolidRectangle) getExactTranslation
+        pure $ length (nub translations) == length translations
+      complain "scene draws the level correctly?" $ do
+        image <- normalizedImage
+        pure $ image == normalize (pictures
+          [translated (fromIntegral x) (fromIntegral y) $ Task12.aTile $ Task12.level (x,y)
+          | x <- [-10..10], y <- [-10..10]
+          ])
   ]
-  where
-    translations = map getExactTranslation $ findAllActual (`contains` someSolidRectangle) Task12.scene
-

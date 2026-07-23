@@ -9,7 +9,7 @@ extra-deps:
   - hyperbole-0.7.1
   - atomic-css-0.2.0
   - git: https://github.com/fmidue/codeworld-tasks
-    commit: 67bc363e81485a14a1aa624b8dd1d47a067d7bf0
+    commit: 6556a80d2f3155e109b510beaa4f2d6f66cf07c6
   - git: https://github.com/fmidue/haskell-template-task
     commit: 4c5dc589589ec1647878f0f1daa6101159470c18
     subdirs:
