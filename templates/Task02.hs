@@ -71,14 +71,11 @@ configHlintErrors:
 - Using or on tuple
 - Using product on tuple
 - Using sum on tuple
-- Redundant bracket
-- Use even
 # - Use isJust
 # - Use isNothing
 # - Use null
-- Use odd
 
-allowAdding: false
+allowAdding: true
 allowModifying: false
 allowRemoving: false
 
@@ -142,20 +139,13 @@ configHlintSuggestions:
 - Use min
 - Use section
 - Use tail
-- Apply De Morgan law
-- Redundant /=
-- Redundant ==
-- Redundant if
-- Use &&
-- Use 1
+- Redundant bracket
 - Use camelCase
 # - Use curry
-- Use if
 - Use infix
 # - Use maybe
 - Use negate
 # - Use uncurry
-- Use ||
 - Use brighter
 - Use darker
 - Use dilated
@@ -172,125 +162,90 @@ configLanguageExtensions:
 - NoTemplateHaskell
 - TupleSections
 ----------
-module Task07 where
+module Task02 where
 
 import CodeWorld
-import Prelude hiding (($))
+import Prelude hiding (($)) -- just preventing some syntax that might confuse beginners
 
--- This time we want to draw an Easter themed image. Create the scene 
--- of an egg hunt: many differently colored eggs of different sizes 
--- are "hidden" inside a garden. 
+-- Draw a picture of a tree similar to:
 --
--- You can use the following picture as a reference: 
--- 
---   https://code.world/run.html?mode=haskell&dhash=Dm6BmessB7_uexuGH4ILOVg
+--   https://code.world/run.html?mode=haskell&dhash=DDZ_AqUvWQm3FricOIoNx7A
 --
--- Your picture should obviously contain multiple eggs. You can 
--- include as many eggs as you want, but there should be at least 6. 
--- All of them should have uniquely colored shells and they should 
--- vary in size. They should be spread out above a lawn (green solid
--- rectangle). It's okay if the eggs float above the grass a 
--- bit. They do not have to touch the ground. 
+-- Your tree should at least consist of a trunk, two branches and some
+-- leaves/crown.
 --
--- You can re-use your egg from Task03 if you like. If you do,
--- note that the eggs in the new picture do not contain an egg yolk. 
--- 
--- For this task, you are not allowed to freely add definitions. 
--- You can and should only modify occurrences of 'undefined' below.
--- Adding anything else will result in your submission being rejected. 
--- 
--- Hint: Placing all of the eggs individually would be a lot of
---       unnecessary work. Try to define the scene more abstractly
---       (maybe review the lecture slides for ideas). 
+-- You can look up how to produce and transform relevant shapes in the
+-- CodeWorld documentation and in the example(s) from the lecture.
 
 main :: IO ()
 main = drawingOf scene
 
 scene :: Picture
 scene = undefined
-  where
-    egg :: Picture
-    egg = undefined
 ----------
 module Test (test) where
-import qualified Task07
-import Data.Maybe (fromJust, isNothing, mapMaybe)
-import Data.List.Extra (nubBy, nubOrd)
-import Test.HUnit ((~:), Test(..), assertBool, assertString)
+import qualified Task02
+import Test.HUnit (
+  (~:),
+  Test(..),
+  assertBool,
+  assertString,
+  )
 import CodeWorld.Test (
-  (.&.),
-  withColor,
-  contains,
+  brown,
   green,
-  someCircle,
-  someCurve,
+  rotatedQuarter,
+  rotatedUpToFull,
   someSolidCircle,
-  someSolidCurve,
   someSolidRectangle,
+  someTallSolidRectangle,
+  withColor,
 
-  findAll,
-  getColor,
-  getExactCircleRadius,
-  getExactScalingFactors,
-  isSameColor,
-
-  (<||>),
+  atLeast,
   containsElem,
   hasRelation,
+  ifThen,
   isAbove,
   isLeftOf,
-  isRightOf,
-  oneOf,
+  isNorthOf,
+  (<&&>),
 
   complain,
   testPicture,
 
   testCSE,
   )
+import Data.Maybe (fromJust, isNothing)
 
-import qualified TestHarness as TH
 import TestHelper (isDeeplyDefined)
 
 test :: [ Test ]
 test =
-  [ "scene =/= undefined?" ~: isDeeplyDefined Task07.scene
-  , TestCase $ assertString $ testPicture Task07.scene $ do
-      complain "There's grass?" $ containsElem grass
-      sceneEggs <- findAll isEgg
-      let eggAmount = length sceneEggs
-      complain "There's at least one egg?" $ pure $ eggAmount >= 1
-      complain "There are at least 6 eggs?" $ pure $ eggAmount >= 6
-      complain "Each egg has a unique color?" $
-        pure $ length (usedColors sceneEggs) >= 6
-      complain "There are eggs of different sizes?" $
-        pure (lengthUniques (map getExactScalingFactors sceneEggs) >= 2) <||>
-        pure (lengthUniques (map getExactCircleRadius sceneEggs) >= 2) <||>
-        oneOf containsElem (drop 2 eggChoices)
-      complain "Eggs are spread out? Maybe you have drawn too many rectangles if they are." $
-        oneOf (\p -> hasRelation (p `isLeftOf` p)) eggChoices <||>
-        oneOf (\p -> hasRelation (p `isRightOf` p)) eggChoices
-      complain "Eggs are above the grass?" $
-        oneOf (\p -> hasRelation (p `isAbove` grass)) eggChoices
-
-  , TestCase $ TH.syntaxCheckWithExts ["LambdaCase","NoTemplateHaskell","TupleSections"] $ \m -> assertBool
-      "You are manually placing the eggs. Consider a different approach!"
-      $ TH.contains TH.listComprehension $ TH.findTopLevelDeclsOf "scene" m
+  [ "scene =/= undefined?" ~: isDeeplyDefined Task02.scene
+  , TestCase $ assertString $ testPicture Task02.scene $ do
+      complain "Picture contains a trunk?" $ containsElem wood
+      complain "Tree has at least a trunk and two branches?" $ wood `atLeast` 3
+      complain "Tree has a green crown?" $ containsElem $ withColor green someSolidCircle
+      complain "The trunk stands upright and there is a tree crown above it?"
+        $ hasRelation $ withColor green someSolidCircle `isNorthOf` uprightWood
+      complain
+        ( "Branches are roughly symmetrical? " ++
+          "(if they already are, make sure your branches share code as much as possible)"
+        )
+        $ containsElem (rotatedQuarter uprightWood) `ifThen` containsElem (rotatedUpToFull uprightWood) <&&>
+          containsElem (rotatedUpToFull uprightWood) `ifThen` containsElem (rotatedQuarter uprightWood)
+      complain
+        ( "Branches are in the correct position? " ++
+          "(They should neither cross, nor be detached from the trunk, nor be at level with the trunk)"
+        )
+        $ hasRelation (rotatedQuarter uprightWood `isAbove` uprightWood) <&&>
+          hasRelation (rotatedUpToFull uprightWood `isAbove` uprightWood) <&&>
+          hasRelation (rotatedQuarter uprightWood `isLeftOf` rotatedUpToFull uprightWood)
 
   , TestCase $ do
-      result <- testCSE Task07.scene
+      result <- testCSE Task02.scene
       assertBool (fromJust result) (isNothing result)
   ]
   where
-    grass = withColor green someSolidRectangle
-    usedColors = nubBy isSameColor . mapMaybe getColor
-    eggChoices = [singleEgg, doubleEgg, polyEggSolid, polyEggThick]
-    singleEgg = someCircle
-    doubleEgg = someSolidCircle .&. someSolidCircle
-    polyEggSolid = someSolidCurve 4
-    polyEggThick = someCurve 4
-    isEgg p = p `contains` singleEgg || p `contains` doubleEgg ||
-              p `contains` polyEggSolid || p `contains` polyEggThick
-
-    lengthUniques :: (Ord a, Eq a) => [a] -> Int
-    lengthUniques = length . nubOrd
-
+    wood = withColor brown someSolidRectangle
+    uprightWood = withColor brown someTallSolidRectangle
